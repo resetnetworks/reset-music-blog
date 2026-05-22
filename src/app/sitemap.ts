@@ -4,7 +4,7 @@ import Article from "@/models/Article";
 import Category from "@/models/Category";
 import Tag from "@/models/Tag";
 
-const BASE_URL = "https://resetmusic.com";
+const BASE_URL = "https://blog.musicreset.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {

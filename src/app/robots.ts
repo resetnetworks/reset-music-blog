@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: "/admin/",
     },
-    sitemap: "https://resetmusic.com/sitemap.xml",
+    sitemap: "https://blog.musicreset.com/sitemap.xml",
   };
 }
