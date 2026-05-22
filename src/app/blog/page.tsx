@@ -75,7 +75,7 @@ export default async function BlogPage({
     excerpt: a.excerpt,
     coverImage: a.coverImage,
     readingTime: a.readingTime || 5,
-    publishedAt: a.publishedAt,
+    publishedAt: a.publishedAt || a.createdAt || null,
     authorName: a.author?.name || "Unknown",
     authorSlug: a.author?.slug || "",
     categoryName: a.category?.name || "Uncategorized",

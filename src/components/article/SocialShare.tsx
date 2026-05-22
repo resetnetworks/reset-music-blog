@@ -1,4 +1,7 @@
+"use client";
+
 import { Twitter, Facebook, Link2, Linkedin } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface SocialShareProps {
   title: string;
@@ -6,13 +9,34 @@ interface SocialShareProps {
 }
 
 export default function SocialShare({ title, url }: SocialShareProps) {
-  const currentUrl = url || (typeof window !== "undefined" ? window.location.href : "");
+  const [currentUrl, setCurrentUrl] = useState(url || "");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    if (!url && typeof window !== "undefined") {
+      setCurrentUrl(window.location.href);
+    }
+  }, [url]);
+
   const encodedUrl = encodeURIComponent(currentUrl);
   const encodedTitle = encodeURIComponent(title);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(currentUrl);
   };
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground mr-1">Share</span>
+        <div className="p-2 w-8 h-8"></div>
+        <div className="p-2 w-8 h-8"></div>
+        <div className="p-2 w-8 h-8"></div>
+        <div className="p-2 w-8 h-8"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2">

@@ -4,38 +4,39 @@ import { ArrowLeft } from "lucide-react";
 import ArticleCard from "@/components/article/ArticleCard";
 import dbConnect from "@/lib/mongoose";
 import Article from "@/models/Article";
-import Category from "@/models/Category";
+import Tag from "@/models/Tag";
 
 // Ensure Author and Category models are registered
 import "@/models/Author";
+import "@/models/Category";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   await dbConnect();
   const { slug } = await params;
-  const category = await Category.findOne({ slug }).lean();
+  const tag = await Tag.findOne({ slug }).lean();
   
-  if (!category) return { title: "Category Not Found" };
+  if (!tag) return { title: "Tag Not Found" };
   
   return {
-    title: `${category.name} | Reset Music`,
-    description: category.description || `Browse articles in ${category.name}`,
+    title: `${tag.name} | Reset Music`,
+    description: `Browse articles tagged with ${tag.name}`,
   };
 }
 
-export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function TagPage({ params }: { params: Promise<{ slug: string }> }) {
   await dbConnect();
   
   const { slug } = await params;
-  const category = await Category.findOne({ slug }).lean();
+  const tag = await Tag.findOne({ slug }).lean();
 
-  if (!category) {
+  if (!tag) {
     notFound();
   }
 
   const articles = await Article.find({
-    category: category._id,
+    tags: tag._id,
     publishStatus: "published",
   })
     .sort({ publishedAt: -1 })
@@ -69,21 +70,22 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         All articles
       </Link>
 
-      {/* Category Header */}
+      {/* Tag Header */}
       <div className="mb-10">
-        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mb-2">
-          {category.name}
-        </h1>
-        {category.description && (
-          <p className="text-muted-foreground">{category.description}</p>
-        )}
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xl text-muted-foreground">#</span>
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+            {tag.name}
+          </h1>
+        </div>
+        <p className="text-muted-foreground">Articles tagged with {tag.name}</p>
       </div>
 
       {/* Articles */}
       {mappedArticles.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-muted-foreground">
-            No articles in this category yet.
+            No articles with this tag yet.
           </p>
         </div>
       ) : (

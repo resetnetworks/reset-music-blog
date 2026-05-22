@@ -33,8 +33,13 @@ export default function Navigation({ categories }: { categories: Category[] }) {
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 shrink-0">
-              <span className="text-lg font-semibold tracking-tight text-foreground">
+            <Link href="/" className="flex items-center gap-2 shrink-0 group">
+              <img 
+                src="/icon.svg" 
+                alt="Reset Music Logo" 
+                className="h-7 w-auto object-contain transition-transform group-hover:scale-105"
+              />
+              <span className="text-lg font-semibold tracking-tight text-foreground hidden sm:inline-block">
                 Reset Music
               </span>
             </Link>

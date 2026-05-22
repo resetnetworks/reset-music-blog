@@ -14,9 +14,10 @@ import "@/models/Author";
 import "@/models/Category";
 import "@/models/Tag";
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   await dbConnect();
-  const article = await Article.findOne({ slug: params.slug }).lean();
+  const { slug } = await params;
+  const article = await Article.findOne({ slug }).lean();
 
   if (!article) {
     return { title: "Not Found" };
@@ -45,10 +46,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function ArticlePage({ params }: { params: { slug: string } }) {
+export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   await dbConnect();
   
-  const article = await Article.findOne({ slug: params.slug })
+  const { slug } = await params;
+  const article = await Article.findOne({ slug })
     .populate("author", "name slug avatar bio")
     .populate("category", "name slug")
     .populate("tags", "name slug")
@@ -67,8 +69,9 @@ export default async function ArticlePage({ params }: { params: { slug: string }
     .populate("category", "name slug")
     .lean();
 
-  const formattedDate = article.publishedAt
-    ? format(new Date(article.publishedAt), "MMMM d, yyyy")
+  const dateToFormat = article.publishedAt || article.createdAt;
+  const formattedDate = dateToFormat
+    ? format(new Date(dateToFormat), "MMMM d, yyyy")
     : "";
 
   return (

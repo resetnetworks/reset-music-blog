@@ -52,10 +52,19 @@ export async function saveArticleAction(formData: FormData) {
       const existing = await Article.findOne({ slug, _id: { $ne: id } });
       if (existing) return { error: "Slug already exists" };
 
+      const oldArticle = await Article.findById(id);
+      if (publishStatus === "published" && oldArticle?.publishStatus !== "published") {
+        (articleData as any).publishedAt = new Date();
+      }
+
       await Article.findByIdAndUpdate(id, articleData);
     } else {
       const existing = await Article.findOne({ slug });
       if (existing) return { error: "Slug already exists" };
+
+      if (publishStatus === "published") {
+        (articleData as any).publishedAt = new Date();
+      }
 
       await Article.create(articleData);
     }

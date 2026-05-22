@@ -12,11 +12,12 @@ export const metadata = {
   title: "Edit Article | Reset Music",
 };
 
-export default async function EditArticlePage({ params }: { params: { id: string } }) {
+export default async function EditArticlePage({ params }: { params: Promise<{ id: string }> }) {
   await dbConnect();
   
+  const { id } = await params;
   const [article, authors, categories, tags] = await Promise.all([
-    Article.findById(params.id).lean(),
+    Article.findById(id).lean(),
     Author.find().lean(),
     Category.find().lean(),
     Tag.find().lean(),
