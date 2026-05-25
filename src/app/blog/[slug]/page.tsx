@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   const seoTitle = article.seoTitle || article.title;
   const seoDescription = article.seoDescription || article.excerpt || "";
-  const seoImage = article.socialImage || article.coverImage || "";
+  const seoImage = article.socialImage || article.coverImage || "/og-default.png";
 
   return {
     title: `${seoTitle} | Reset Music`,
@@ -33,15 +33,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     openGraph: {
       title: seoTitle,
       description: seoDescription,
+      url: `https://blog.musicreset.com/blog/${slug}`,
       type: "article",
       publishedTime: article.publishedAt,
-      images: seoImage ? [seoImage] : [],
+      images: seoImage ? [seoImage] : ["/og-default.png"],
     },
     twitter: {
       card: "summary_large_image",
       title: seoTitle,
       description: seoDescription,
-      images: seoImage ? [seoImage] : [],
+      images: seoImage ? [seoImage] : ["/og-default.png"],
     },
   };
 }

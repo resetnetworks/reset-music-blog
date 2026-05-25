@@ -33,7 +33,24 @@ export const metadata = {
     title: "Reset Music — Music Production Tips, Tutorials & Culture",
     description:
       "Deep dives into music production, sound design, and the art of making music. No filler — just real knowledge from working producers.",
+    url: "https://blog.musicreset.com",
+    siteName: "Reset Music",
     type: "website",
+    images: [
+      {
+        url: "/og-default.png",
+        width: 1200,
+        height: 630,
+        alt: "Reset Music — Music Production Tips, Tutorials & Culture",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Reset Music — Music Production Tips, Tutorials & Culture",
+    description:
+      "Deep dives into music production, sound design, and the art of making music. No filler — just real knowledge from working producers.",
+    images: ["/og-default.png"],
   },
 };
 

@@ -18,9 +18,32 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   
   if (!category) return { title: "Category Not Found" };
   
+  const title = `${category.name} | Reset Music`;
+  const description = category.description || `Browse articles and tutorials in ${category.name} on Reset Music.`;
   return {
-    title: `${category.name} | Reset Music`,
-    description: category.description || `Browse articles in ${category.name}`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `https://blog.musicreset.com/category/${slug}`,
+      siteName: "Reset Music",
+      type: "website",
+      images: [
+        {
+          url: "/og-default.png",
+          width: 1200,
+          height: 630,
+          alt: `${category.name} | Reset Music`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/og-default.png"],
+    },
   };
 }
 

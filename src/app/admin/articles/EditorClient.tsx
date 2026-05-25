@@ -14,6 +14,159 @@ function slugify(text: string): string {
     .substring(0, 200);
 }
 
+function htmlToMarkdown(htmlString: string): string {
+  if (typeof window === "undefined") return htmlString;
+  
+  // Create a temporary hidden container to let the browser evaluate class rules & CSS inheritance
+  const container = document.createElement("div");
+  container.style.position = "absolute";
+  container.style.width = "0";
+  container.style.height = "0";
+  container.style.overflow = "hidden";
+  container.style.opacity = "0";
+  container.style.pointerEvents = "none";
+  container.style.zIndex = "-9999";
+  container.innerHTML = htmlString;
+  document.body.appendChild(container);
+  
+  function convertNode(node: Node, context = { bold: false, italic: false, inHeading: false }): string {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return node.textContent || "";
+    }
+    
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      return "";
+    }
+    
+    const element = node as HTMLElement;
+    const tagName = element.tagName.toLowerCase();
+    
+    if (tagName === "style" || tagName === "script") {
+      return "";
+    }
+    
+    // Evaluate computed style values directly using the browser's CSS rendering engine
+    const computedStyle = window.getComputedStyle(element);
+    const fontWeight = computedStyle.fontWeight;
+    const fontStyle = computedStyle.fontStyle;
+    const fontSize = computedStyle.fontSize;
+    
+    const isBold = fontWeight === "bold" || parseInt(fontWeight) >= 700 || tagName === "strong" || tagName === "b";
+    const isItalic = fontStyle === "italic" || fontStyle === "oblique" || tagName === "em" || tagName === "i";
+    
+    // Detect heading level based on computed font size (Google Docs heading mimicry)
+    let isHeading = false;
+    let headingLevel = 3;
+    if (fontSize) {
+      const sizePx = parseFloat(fontSize);
+      if (sizePx >= 26) {
+        isHeading = true;
+        headingLevel = 1;
+      } else if (sizePx >= 21) {
+        isHeading = true;
+        headingLevel = 2;
+      } else if (sizePx >= 18) {
+        isHeading = true;
+        headingLevel = 3;
+      }
+    }
+    
+    // Override with native tags if present
+    if (/^h[1-6]$/.test(tagName)) {
+      isHeading = true;
+      headingLevel = parseInt(tagName[1]);
+    }
+    
+    const nextContext = {
+      bold: context.bold || isBold,
+      italic: context.italic || isItalic,
+      inHeading: context.inHeading || isHeading
+    };
+    
+    // Recurse child nodes
+    let childrenContent = "";
+    element.childNodes.forEach((child) => {
+      childrenContent += convertNode(child, nextContext);
+    });
+    
+    // Wrap formatting rules contextually at the outermost level
+    const shouldWrapBold = isBold && !context.bold;
+    const shouldWrapItalic = isItalic && !context.italic;
+    const shouldWrapHeading = isHeading && !context.inHeading;
+    
+    let formattedText = childrenContent;
+    
+    if (shouldWrapBold && shouldWrapItalic) {
+      const clean = formattedText.trim();
+      formattedText = clean ? `***${clean}***` : formattedText;
+    } else if (shouldWrapBold) {
+      const clean = formattedText.trim();
+      formattedText = clean ? `**${clean}**` : formattedText;
+    } else if (shouldWrapItalic) {
+      const clean = formattedText.trim();
+      formattedText = clean ? `*${clean}*` : formattedText;
+    }
+    
+    if (shouldWrapHeading) {
+      const hashes = "#".repeat(headingLevel);
+      return `\n\n${hashes} ${formattedText.trim()}\n\n`;
+    }
+    
+    switch (tagName) {
+      case "a": {
+        const href = element.getAttribute("href") || "";
+        const cleanAnchor = formattedText.trim();
+        return cleanAnchor && href ? `[${cleanAnchor}](${href})` : formattedText;
+      }
+      
+      case "p":
+      case "div": {
+        let text = formattedText.trim();
+        // Regex to convert Google Docs lists bullet markers to standard markdown list items
+        const bulletRegex = /^[●○■▪\u2022\u25e6\u25aa\u25ab]\s*(.+)$/;
+        const match = bulletRegex.exec(text);
+        if (match) {
+          return `\n\n* ${match[1]}\n\n`;
+        }
+        return `\n\n${text}\n\n`;
+      }
+      
+      case "ul":
+      case "ol":
+        return `\n\n${formattedText}\n\n`;
+      case "li": {
+        const isOrdered = element.parentElement?.tagName.toLowerCase() === "ol";
+        if (isOrdered) {
+          const siblings = Array.from(element.parentElement?.children || []);
+          const index = siblings.indexOf(element) + 1;
+          return `${index}. ${formattedText.trim()}\n`;
+        }
+        return `* ${formattedText.trim()}\n`;
+      }
+      case "br":
+        return "\n";
+      case "code":
+        return `\`${formattedText}\``;
+      case "pre":
+        return `\n\`\`\`\n${formattedText}\n\`\`\`\n`;
+      default:
+        return formattedText;
+    }
+  }
+  
+  let markdown = convertNode(container);
+  
+  // Clean up
+  document.body.removeChild(container);
+  
+  // Clean up duplicate newlines
+  markdown = markdown
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+    
+  return markdown;
+}
+
 export default function EditorClient({
   initialData,
   authors,
@@ -49,6 +202,7 @@ export default function EditorClient({
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(isEditing);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isContentUploading, setIsContentUploading] = useState(false);
 
   useEffect(() => {
     if (!slugManuallyEdited && title && !isEditing) {
@@ -92,6 +246,127 @@ export default function EditorClient({
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const handleContentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsContentUploading(true);
+      const { uploadUrl, fileUrl } = await getPresignedUrlAction(file.type);
+
+      if (!uploadUrl) {
+        throw new Error("Failed to get presigned URL");
+      }
+
+      const res = await fetch(uploadUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+
+      if (res.ok) {
+        const textarea = document.getElementById("markdown-editor-textarea") as HTMLTextAreaElement;
+        const markdownImage = `\n![${file.name}](${fileUrl})\n`;
+        
+        if (textarea) {
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const text = textarea.value;
+          const newContent = text.substring(0, start) + markdownImage + text.substring(end);
+          setContent(newContent);
+          
+          setTimeout(() => {
+            textarea.focus();
+            textarea.selectionStart = textarea.selectionEnd = start + markdownImage.length;
+          }, 50);
+        } else {
+          setContent((prev: string) => prev + markdownImage);
+        }
+      } else {
+        alert("Upload failed.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Upload failed.");
+    } finally {
+      setIsContentUploading(false);
+    }
+  };
+
+  const handleTextareaDrop = async (e: React.DragEvent<HTMLTextAreaElement>) => {
+    const files = e.dataTransfer?.files;
+    if (!files || files.length === 0) return;
+    
+    const file = files[0];
+    if (!file.type.startsWith("image/")) return;
+    
+    e.preventDefault();
+    
+    try {
+      setIsContentUploading(true);
+      const { uploadUrl, fileUrl } = await getPresignedUrlAction(file.type);
+
+      if (!uploadUrl) {
+        throw new Error("Failed to get presigned URL");
+      }
+
+      const res = await fetch(uploadUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+
+      if (res.ok) {
+        const textarea = e.currentTarget;
+        const markdownImage = `\n![${file.name}](${fileUrl})\n`;
+        
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = textarea.value;
+        const newContent = text.substring(0, start) + markdownImage + text.substring(end);
+        setContent(newContent);
+        
+        setTimeout(() => {
+          textarea.focus();
+          textarea.selectionStart = textarea.selectionEnd = start + markdownImage.length;
+        }, 50);
+      } else {
+        alert("Upload failed.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Upload failed.");
+    } finally {
+      setIsContentUploading(false);
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const html = e.clipboardData.getData("text/html");
+    if (!html) return;
+
+    e.preventDefault();
+    
+    const markdown = htmlToMarkdown(html);
+    
+    const textarea = e.currentTarget;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    
+    const newContent = text.substring(0, start) + markdown + text.substring(end);
+    setContent(newContent);
+    
+    setTimeout(() => {
+      textarea.focus();
+      textarea.selectionStart = textarea.selectionEnd = start + markdown.length;
+    }, 50);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -274,12 +549,30 @@ export default function EditorClient({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1.5">Content (Markdown)</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-medium">Content (Markdown)</label>
+                <label className="cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 bg-secondary hover:bg-secondary/80 text-xs font-medium rounded border border-border transition-colors select-none">
+                  <Upload className="w-3.5 h-3.5" />
+                  {isContentUploading ? "Uploading..." : "Upload & Insert Image"}
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleContentImageUpload}
+                    disabled={isContentUploading}
+                  />
+                </label>
+              </div>
               <textarea
+                id="markdown-editor-textarea"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
+                onDrop={handleTextareaDrop}
+                onDragOver={(e) => e.preventDefault()}
+                onPaste={handlePaste}
                 required
                 rows={20}
+                placeholder="Write your article in markdown here... You can also drop image files directly here to upload and insert them."
                 className="w-full px-3 py-2 text-sm bg-background border border-border rounded-md outline-none focus:ring-1 focus:ring-foreground/20 font-mono leading-relaxed resize-y"
               />
             </div>

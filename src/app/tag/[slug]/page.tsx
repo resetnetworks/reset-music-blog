@@ -19,9 +19,32 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   
   if (!tag) return { title: "Tag Not Found" };
   
+  const title = `${tag.name} | Reset Music`;
+  const description = `Browse articles tagged with ${tag.name} on Reset Music.`;
   return {
-    title: `${tag.name} | Reset Music`,
-    description: `Browse articles tagged with ${tag.name}`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `https://blog.musicreset.com/tag/${slug}`,
+      siteName: "Reset Music",
+      type: "website",
+      images: [
+        {
+          url: "/og-default.png",
+          width: 1200,
+          height: 630,
+          alt: `${tag.name} | Reset Music`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/og-default.png"],
+    },
   };
 }
 
