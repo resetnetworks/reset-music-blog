@@ -34,7 +34,7 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body className={`${inter.className} min-h-screen flex flex-col`} suppressHydrationWarning>
         <Navigation categories={serializedCategories} />
         <main className="flex-1">{children}</main>

@@ -19,13 +19,15 @@ export const metadata = {
 export default async function BlogPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   await dbConnect();
   
-  const page = typeof searchParams.page === "string" ? parseInt(searchParams.page) : 1;
-  const categorySlug = typeof searchParams.category === "string" ? searchParams.category : "";
-  const search = typeof searchParams.search === "string" ? searchParams.search : "";
+  const resolvedParams = await searchParams;
+  
+  const page = typeof resolvedParams.page === "string" ? parseInt(resolvedParams.page) : 1;
+  const categorySlug = typeof resolvedParams.category === "string" ? resolvedParams.category : "";
+  const search = typeof resolvedParams.search === "string" ? resolvedParams.search : "";
   
   const limit = 9;
   const skip = (page - 1) * limit;

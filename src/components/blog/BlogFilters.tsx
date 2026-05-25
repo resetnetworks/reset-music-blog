@@ -17,6 +17,10 @@ function FiltersContent({ categories }: { categories: Category[] }) {
   const categorySlug = searchParams.get("category") || "";
 
   useEffect(() => {
+    const currentSearch = searchParams.get("search") || "";
+    // Avoid pushing to the router if the query hasn't changed
+    if (searchQuery === currentSearch) return;
+
     const timer = setTimeout(() => {
       const newParams = new URLSearchParams(searchParams.toString());
       if (searchQuery) {

@@ -17,13 +17,15 @@ export const metadata = {
 export default async function AdminArticlesPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   await dbConnect();
 
-  const search = typeof searchParams.search === "string" ? searchParams.search : "";
-  const status = typeof searchParams.status === "string" ? searchParams.status : "all";
-  const page = typeof searchParams.page === "string" ? parseInt(searchParams.page) : 1;
+  const resolvedParams = await searchParams;
+
+  const search = typeof resolvedParams.search === "string" ? resolvedParams.search : "";
+  const status = typeof resolvedParams.status === "string" ? resolvedParams.status : "all";
+  const page = typeof resolvedParams.page === "string" ? parseInt(resolvedParams.page) : 1;
   const limit = 15;
   const skip = (page - 1) * limit;
 
