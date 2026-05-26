@@ -136,7 +136,7 @@ export default async function Home() {
       <section className="pt-10 pb-16" aria-label="Site introduction">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
-            <h1 className="text-3xl md:text-4xl lg:text-[2.75rem] font-semibold tracking-tight leading-[1.15] mb-4">
+            <h1 className="text-3xl md:text-4xl lg:text-[3rem] font-semibold leading-[1.15] mb-4">
               Music Production Tutorials, Guides &amp; Culture for Serious Producers
             </h1>
             <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
@@ -310,12 +310,12 @@ export default async function Home() {
               breakdowns of production techniques, and honest gear reviews — all written by
               producers who still make music every day.
             </p>
-            <Link
+            {/* <Link
               href="/about"
               className="inline-flex items-center gap-1 mt-4 text-sm font-medium hover:opacity-70 transition-opacity"
             >
               Learn more about us <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
-            </Link>
+            </Link> */}
           </div>
         </div>
       </section>
