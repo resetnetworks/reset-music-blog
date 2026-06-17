@@ -64,15 +64,36 @@ export default function Navigation({ categories }: { categories: Category[] }) {
               >
                 Articles
               </Link>
-              {categories?.slice(0, 4).map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/category/${cat.slug}`}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {cat.name}
-                </Link>
-              ))}
+              <Link
+                href="/news"
+                className={`text-sm transition-colors ${
+                  pathname === "/news"
+                    ? "text-foreground font-medium"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                News
+              </Link>
+              <Link
+                href="/about"
+                className={`text-sm transition-colors ${
+                  pathname === "/about"
+                    ? "text-foreground font-medium"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                About
+              </Link>
+              <Link
+                href="/jobs"
+                className={`text-sm transition-colors ${
+                  pathname === "/jobs"
+                    ? "text-foreground font-medium"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Jobs
+              </Link>
             </nav>
 
             {/* Right side actions */}
@@ -129,27 +150,48 @@ export default function Navigation({ categories }: { categories: Category[] }) {
             <Link
               href="/"
               onClick={() => setMenuOpen(false)}
-              className="text-lg font-medium py-2 border-b border-border/40"
+              className={`text-lg font-medium py-2 border-b border-border/40 ${
+                isHome ? "text-foreground font-semibold" : "text-muted-foreground"
+              }`}
             >
               Home
             </Link>
             <Link
               href="/blog"
               onClick={() => setMenuOpen(false)}
-              className="text-lg font-medium py-2 border-b border-border/40"
+              className={`text-lg font-medium py-2 border-b border-border/40 ${
+                pathname === "/blog" ? "text-foreground font-semibold" : "text-muted-foreground"
+              }`}
             >
-              All Articles
+              Articles
             </Link>
-            {categories?.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/category/${cat.slug}`}
-                onClick={() => setMenuOpen(false)}
-                className="text-base py-2 border-b border-border/40 text-muted-foreground"
-              >
-                {cat.name}
-              </Link>
-            ))}
+            <Link
+              href="/news"
+              onClick={() => setMenuOpen(false)}
+              className={`text-lg font-medium py-2 border-b border-border/40 ${
+                pathname === "/news" ? "text-foreground font-semibold" : "text-muted-foreground"
+              }`}
+            >
+              News
+            </Link>
+            <Link
+              href="/about"
+              onClick={() => setMenuOpen(false)}
+              className={`text-lg font-medium py-2 border-b border-border/40 ${
+                pathname === "/about" ? "text-foreground font-semibold" : "text-muted-foreground"
+              }`}
+            >
+              About
+            </Link>
+            <Link
+              href="/jobs"
+              onClick={() => setMenuOpen(false)}
+              className={`text-lg font-medium py-2 border-b border-border/40 ${
+                pathname === "/jobs" ? "text-foreground font-semibold" : "text-muted-foreground"
+              }`}
+            >
+              Jobs
+            </Link>
           </nav>
         </div>
       )}
