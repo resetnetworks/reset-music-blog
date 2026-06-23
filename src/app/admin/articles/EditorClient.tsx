@@ -16,7 +16,7 @@ function slugify(text: string): string {
 
 function htmlToMarkdown(htmlString: string): string {
   if (typeof window === "undefined") return htmlString;
-  
+
   // Create a temporary hidden container to let the browser evaluate class rules & CSS inheritance
   const container = document.createElement("div");
   container.style.position = "absolute";
@@ -28,32 +28,32 @@ function htmlToMarkdown(htmlString: string): string {
   container.style.zIndex = "-9999";
   container.innerHTML = htmlString;
   document.body.appendChild(container);
-  
+
   function convertNode(node: Node, context = { bold: false, italic: false, inHeading: false }): string {
     if (node.nodeType === Node.TEXT_NODE) {
       return node.textContent || "";
     }
-    
+
     if (node.nodeType !== Node.ELEMENT_NODE) {
       return "";
     }
-    
+
     const element = node as HTMLElement;
     const tagName = element.tagName.toLowerCase();
-    
+
     if (tagName === "style" || tagName === "script") {
       return "";
     }
-    
+
     // Evaluate computed style values directly using the browser's CSS rendering engine
     const computedStyle = window.getComputedStyle(element);
     const fontWeight = computedStyle.fontWeight;
     const fontStyle = computedStyle.fontStyle;
     const fontSize = computedStyle.fontSize;
-    
+
     const isBold = fontWeight === "bold" || parseInt(fontWeight) >= 700 || tagName === "strong" || tagName === "b";
     const isItalic = fontStyle === "italic" || fontStyle === "oblique" || tagName === "em" || tagName === "i";
-    
+
     // Detect heading level based on computed font size (Google Docs heading mimicry)
     let isHeading = false;
     let headingLevel = 3;
@@ -70,32 +70,32 @@ function htmlToMarkdown(htmlString: string): string {
         headingLevel = 3;
       }
     }
-    
+
     // Override with native tags if present
     if (/^h[1-6]$/.test(tagName)) {
       isHeading = true;
       headingLevel = parseInt(tagName[1]);
     }
-    
+
     const nextContext = {
       bold: context.bold || isBold,
       italic: context.italic || isItalic,
       inHeading: context.inHeading || isHeading
     };
-    
+
     // Recurse child nodes
     let childrenContent = "";
     element.childNodes.forEach((child) => {
       childrenContent += convertNode(child, nextContext);
     });
-    
+
     // Wrap formatting rules contextually at the outermost level
     const shouldWrapBold = isBold && !context.bold;
     const shouldWrapItalic = isItalic && !context.italic;
     const shouldWrapHeading = isHeading && !context.inHeading;
-    
+
     let formattedText = childrenContent;
-    
+
     if (shouldWrapBold && shouldWrapItalic) {
       const clean = formattedText.trim();
       formattedText = clean ? `***${clean}***` : formattedText;
@@ -106,19 +106,19 @@ function htmlToMarkdown(htmlString: string): string {
       const clean = formattedText.trim();
       formattedText = clean ? `*${clean}*` : formattedText;
     }
-    
+
     if (shouldWrapHeading) {
       const hashes = "#".repeat(headingLevel);
       return `\n\n${hashes} ${formattedText.trim()}\n\n`;
     }
-    
+
     switch (tagName) {
       case "a": {
         const href = element.getAttribute("href") || "";
         const cleanAnchor = formattedText.trim();
         return cleanAnchor && href ? `[${cleanAnchor}](${href})` : formattedText;
       }
-      
+
       case "p":
       case "div": {
         let text = formattedText.trim();
@@ -130,7 +130,7 @@ function htmlToMarkdown(htmlString: string): string {
         }
         return `\n\n${text}\n\n`;
       }
-      
+
       case "ul":
       case "ol":
         return `\n\n${formattedText}\n\n`;
@@ -153,17 +153,17 @@ function htmlToMarkdown(htmlString: string): string {
         return formattedText;
     }
   }
-  
+
   let markdown = convertNode(container);
-  
+
   // Clean up
   document.body.removeChild(container);
-  
+
   // Clean up duplicate newlines
   markdown = markdown
     .replace(/\n{3,}/g, "\n\n")
     .trim();
-    
+
   return markdown;
 }
 
@@ -199,6 +199,7 @@ export default function EditorClient({
   );
 
   const [showPreview, setShowPreview] = useState(false);
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(isEditing);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -271,14 +272,14 @@ export default function EditorClient({
       if (res.ok) {
         const textarea = document.getElementById("markdown-editor-textarea") as HTMLTextAreaElement;
         const markdownImage = `\n![${file.name}](${fileUrl})\n`;
-        
+
         if (textarea) {
           const start = textarea.selectionStart;
           const end = textarea.selectionEnd;
           const text = textarea.value;
           const newContent = text.substring(0, start) + markdownImage + text.substring(end);
           setContent(newContent);
-          
+
           setTimeout(() => {
             textarea.focus();
             textarea.selectionStart = textarea.selectionEnd = start + markdownImage.length;
@@ -300,12 +301,12 @@ export default function EditorClient({
   const handleTextareaDrop = async (e: React.DragEvent<HTMLTextAreaElement>) => {
     const files = e.dataTransfer?.files;
     if (!files || files.length === 0) return;
-    
+
     const file = files[0];
     if (!file.type.startsWith("image/")) return;
-    
+
     e.preventDefault();
-    
+
     try {
       setIsContentUploading(true);
       const { uploadUrl, fileUrl } = await getPresignedUrlAction(file.type);
@@ -325,13 +326,13 @@ export default function EditorClient({
       if (res.ok) {
         const textarea = e.currentTarget;
         const markdownImage = `\n![${file.name}](${fileUrl})\n`;
-        
+
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
         const text = textarea.value;
         const newContent = text.substring(0, start) + markdownImage + text.substring(end);
         setContent(newContent);
-        
+
         setTimeout(() => {
           textarea.focus();
           textarea.selectionStart = textarea.selectionEnd = start + markdownImage.length;
@@ -352,17 +353,17 @@ export default function EditorClient({
     if (!html) return;
 
     e.preventDefault();
-    
+
     const markdown = htmlToMarkdown(html);
-    
+
     const textarea = e.currentTarget;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const text = textarea.value;
-    
+
     const newContent = text.substring(0, start) + markdown + text.substring(end);
     setContent(newContent);
-    
+
     setTimeout(() => {
       textarea.focus();
       textarea.selectionStart = textarea.selectionEnd = start + markdown.length;
@@ -371,6 +372,26 @@ export default function EditorClient({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const newErrors: {[key: string]: string} = {};
+    if (!title.trim()) newErrors.title = "Title is required";
+    if (!slug.trim()) newErrors.slug = "Slug is required";
+    if (!authorId) newErrors.authorId = "Author is required";
+    if (!categoryId) newErrors.categoryId = "Category is required";
+    if (!content.trim()) newErrors.content = "Content is required";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      const firstErrorField = Object.keys(newErrors)[0];
+      const element = document.getElementById(`field-${firstErrorField}`) || (firstErrorField === "content" ? document.getElementById("markdown-editor-textarea") : null);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        (element as HTMLElement).focus();
+      }
+      return;
+    }
+
+    setErrors({});
     setIsSubmitting(true);
 
     const formData = new FormData();
@@ -446,40 +467,64 @@ export default function EditorClient({
           <MarkdownRenderer content={content} />
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1.5">Title</label>
+              <label className="block text-sm font-medium mb-1.5 flex justify-between">
+                <span>Title <span className="text-red-500" style={{ color: "#ef4444" }}>*</span></span>
+              </label>
               <input
                 type="text"
+                id="field-title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-                className="w-full px-3 py-2 text-sm bg-background border border-border rounded-md outline-none focus:ring-1 focus:ring-foreground/20"
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (errors.title) setErrors((prev) => ({ ...prev, title: "" }));
+                }}
+                className={`w-full px-3 py-2 text-sm bg-background border rounded-md outline-none focus:ring-1 ${
+                  errors.title ? "border-red-500 focus:ring-red-500/20" : "border-border focus:ring-foreground/20"
+                }`}
+                style={errors.title ? { borderColor: "#ef4444" } : {}}
               />
+              {errors.title && <p className="text-xs text-red-500 mt-1" style={{ color: "#ef4444" }}>{errors.title}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1.5">Slug</label>
+              <label className="block text-sm font-medium mb-1.5 flex justify-between">
+                <span>Slug <span className="text-red-500" style={{ color: "#ef4444" }}>*</span></span>
+              </label>
               <input
                 type="text"
+                id="field-slug"
                 value={slug}
                 onChange={(e) => {
                   setSlug(e.target.value);
                   setSlugManuallyEdited(true);
+                  if (errors.slug) setErrors((prev) => ({ ...prev, slug: "" }));
                 }}
-                required
-                className="w-full px-3 py-2 text-sm bg-background border border-border rounded-md outline-none focus:ring-1 focus:ring-foreground/20 font-mono"
+                className={`w-full px-3 py-2 text-sm bg-background border rounded-md outline-none focus:ring-1 font-mono ${
+                  errors.slug ? "border-red-500 focus:ring-red-500/20" : "border-border focus:ring-foreground/20"
+                }`}
+                style={errors.slug ? { borderColor: "#ef4444" } : {}}
               />
+              {errors.slug && <p className="text-xs text-red-500 mt-1" style={{ color: "#ef4444" }}>{errors.slug}</p>}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">Author</label>
+                <label className="block text-sm font-medium mb-1.5 flex justify-between">
+                  <span>Author <span className="text-red-500" style={{ color: "#ef4444" }}>*</span></span>
+                </label>
                 <select
+                  id="field-authorId"
                   value={authorId}
-                  onChange={(e) => setAuthorId(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 text-sm bg-background border border-border rounded-md outline-none focus:ring-1 focus:ring-foreground/20"
+                  onChange={(e) => {
+                    setAuthorId(e.target.value);
+                    if (errors.authorId) setErrors((prev) => ({ ...prev, authorId: "" }));
+                  }}
+                  className={`w-full px-3 py-2 text-sm bg-background border rounded-md outline-none focus:ring-1 ${
+                    errors.authorId ? "border-red-500 focus:ring-red-500/20" : "border-border focus:ring-foreground/20"
+                  }`}
+                  style={errors.authorId ? { borderColor: "#ef4444" } : {}}
                 >
                   <option value="">Select author</option>
                   {authors.map((author) => (
@@ -488,14 +533,23 @@ export default function EditorClient({
                     </option>
                   ))}
                 </select>
+                {errors.authorId && <p className="text-xs text-red-500 mt-1" style={{ color: "#ef4444" }}>{errors.authorId}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">Category</label>
+                <label className="block text-sm font-medium mb-1.5 flex justify-between">
+                  <span>Category <span className="text-red-500" style={{ color: "#ef4444" }}>*</span></span>
+                </label>
                 <select
+                  id="field-categoryId"
                   value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 text-sm bg-background border border-border rounded-md outline-none focus:ring-1 focus:ring-foreground/20"
+                  onChange={(e) => {
+                    setCategoryId(e.target.value);
+                    if (errors.categoryId) setErrors((prev) => ({ ...prev, categoryId: "" }));
+                  }}
+                  className={`w-full px-3 py-2 text-sm bg-background border rounded-md outline-none focus:ring-1 ${
+                    errors.categoryId ? "border-red-500 focus:ring-red-500/20" : "border-border focus:ring-foreground/20"
+                  }`}
+                  style={errors.categoryId ? { borderColor: "#ef4444" } : {}}
                 >
                   <option value="">Select category</option>
                   {categories.map((cat) => (
@@ -504,6 +558,7 @@ export default function EditorClient({
                     </option>
                   ))}
                 </select>
+                {errors.categoryId && <p className="text-xs text-red-500 mt-1" style={{ color: "#ef4444" }}>{errors.categoryId}</p>}
               </div>
             </div>
 
@@ -550,7 +605,9 @@ export default function EditorClient({
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-sm font-medium">Content (Markdown)</label>
+                <label className="block text-sm font-medium flex justify-between">
+                  <span>Content (Markdown) <span className="text-red-500" style={{ color: "#ef4444" }}>*</span></span>
+                </label>
                 <label className="cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 bg-secondary hover:bg-secondary/80 text-xs font-medium rounded border border-border transition-colors select-none">
                   <Upload className="w-3.5 h-3.5" />
                   {isContentUploading ? "Uploading..." : "Upload & Insert Image"}
@@ -566,15 +623,22 @@ export default function EditorClient({
               <textarea
                 id="markdown-editor-textarea"
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e) => {
+                  setContent(e.target.value);
+                  if (errors.content) setErrors((prev) => ({ ...prev, content: "" }));
+                }}
                 onDrop={handleTextareaDrop}
                 onDragOver={(e) => e.preventDefault()}
                 onPaste={handlePaste}
                 required
                 rows={20}
                 placeholder="Write your article in markdown here... You can also drop image files directly here to upload and insert them."
-                className="w-full px-3 py-2 text-sm bg-background border border-border rounded-md outline-none focus:ring-1 focus:ring-foreground/20 font-mono leading-relaxed resize-y"
+                className={`w-full px-3 py-2 text-sm bg-background border rounded-md outline-none focus:ring-1 font-mono leading-relaxed resize-y ${
+                  errors.content ? "border-red-500 focus:ring-red-500/20" : "border-border focus:ring-foreground/20"
+                }`}
+                style={errors.content ? { borderColor: "#ef4444" } : {}}
               />
+              {errors.content && <p className="text-xs text-red-500 mt-1" style={{ color: "#ef4444" }}>{errors.content}</p>}
             </div>
 
             <div>
@@ -585,11 +649,10 @@ export default function EditorClient({
                     key={tag.id}
                     type="button"
                     onClick={() => toggleTag(tag.id)}
-                    className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
-                      selectedTagIds.includes(tag.id)
+                    className={`px-3 py-1.5 text-xs rounded-md transition-colors ${selectedTagIds.includes(tag.id)
                         ? "bg-foreground text-background font-medium"
                         : "bg-secondary text-muted-foreground hover:bg-secondary/80"
-                    }`}
+                      }`}
                   >
                     {tag.name}
                   </button>
