@@ -123,7 +123,13 @@ export default async function Home() {
   const mappedTrending = trendingArticles.map(mapArticle);
 
   const featuredSlugs = new Set(mappedFeatured.map((a: any) => a.slug));
-  const nonFeaturedLatest = mappedLatest.filter((a: any) => !featuredSlugs.has(a.slug));
+  let nonFeaturedLatest = mappedLatest.filter((a: any) => !featuredSlugs.has(a.slug));
+
+  // Fallback: If no non-featured articles exist, show latest articles and only exclude the main hero article
+  if (nonFeaturedLatest.length === 0 && mappedLatest.length > 0) {
+    const heroSlug = mappedFeatured[0]?.slug;
+    nonFeaturedLatest = mappedLatest.filter((a: any) => a.slug !== heroSlug);
+  }
 
   return (
     <>

@@ -31,12 +31,12 @@ export default function ArticleCard({ article, variant = "default" }: ArticleCar
         className="group block"
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-          <div className="aspect-[16/10] overflow-hidden rounded-lg bg-muted">
+          <div className="aspect-[16/10] overflow-hidden rounded-lg bg-secondary/30 flex items-center justify-center">
             {article.coverImage ? (
               <img
                 src={article.coverImage}
                 alt={article.title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
                 loading="lazy"
               />
             ) : (
@@ -93,11 +93,11 @@ export default function ArticleCard({ article, variant = "default" }: ArticleCar
           </span>
         </div>
         {article.coverImage && (
-          <div className="w-20 h-20 shrink-0 overflow-hidden rounded-md bg-muted">
+          <div className="w-20 h-20 shrink-0 overflow-hidden rounded-md bg-secondary/30 flex items-center justify-center">
             <img
               src={article.coverImage}
               alt={article.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               loading="lazy"
             />
           </div>
@@ -112,12 +112,12 @@ export default function ArticleCard({ article, variant = "default" }: ArticleCar
       href={`/blog/${article.slug}`}
       className="group block"
     >
-      <div className="aspect-[16/10] overflow-hidden rounded-lg bg-muted mb-4">
+      <div className="aspect-[16/10] overflow-hidden rounded-lg bg-secondary/30 mb-4 flex items-center justify-center">
         {article.coverImage ? (
           <img
             src={article.coverImage}
             alt={article.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+            className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
             loading="lazy"
           />
         ) : (
