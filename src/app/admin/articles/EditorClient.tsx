@@ -461,7 +461,7 @@ export default function EditorClient({
             <img
               src={coverImage}
               alt={title}
-              className="w-full aspect-[16/9] object-cover rounded-lg mb-8"
+              className="w-full h-auto max-h-[650px] object-contain rounded-lg mb-8 bg-secondary/20"
             />
           )}
           <MarkdownRenderer content={content} />

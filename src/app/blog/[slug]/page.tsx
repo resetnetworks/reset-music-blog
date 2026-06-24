@@ -139,7 +139,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 <img
                   src={article.coverImage}
                   alt={article.title}
-                  className="w-full aspect-[16/9] object-cover rounded-lg"
+                  className="w-full h-auto max-h-[650px] object-contain rounded-lg bg-secondary/20 mx-auto"
                 />
               </figure>
             )}
