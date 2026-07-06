@@ -85,14 +85,14 @@ export default function Navigation({ categories }: { categories: Category[] }) {
                 About
               </Link>
               <Link
-                href="/jobs"
+                href="/careers"
                 className={`text-sm transition-colors ${
-                  pathname === "/jobs"
+                  pathname === "/careers"
                     ? "text-foreground font-medium"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Jobs
+                Careers
               </Link>
             </nav>
 
@@ -184,13 +184,13 @@ export default function Navigation({ categories }: { categories: Category[] }) {
               About
             </Link>
             <Link
-              href="/jobs"
+              href="/careers"
               onClick={() => setMenuOpen(false)}
               className={`text-lg font-medium py-2 border-b border-border/40 ${
-                pathname === "/jobs" ? "text-foreground font-semibold" : "text-muted-foreground"
+                pathname === "/careers" ? "text-foreground font-semibold" : "text-muted-foreground"
               }`}
             >
-              Jobs
+              Careers
             </Link>
           </nav>
         </div>

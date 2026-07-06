@@ -9,6 +9,30 @@ export const metadata = {
 
 const JOBS_DATA = [
   {
+    id: "social-media-manager",
+    title: "Social Media Manager",
+    department: "Marketing",
+    type: "Full-time",
+    locationType: "On-site",
+    location: "Malviya Nagar, New Delhi",
+    experience: "1+ years",
+    description: "",
+    responsibilities: [],
+    requirements: []
+  },
+  {
+    id: "video-editor-graphic-designer",
+    title: "Video Editor & Graphic Designer",
+    department: "Creative",
+    type: "Full-time",
+    locationType: "On-site",
+    location: "Malviya Nagar, New Delhi",
+    experience: "1+ years",
+    description: "",
+    responsibilities: [],
+    requirements: []
+  },
+  {
     id: "devops-engineer",
     title: "DevOps Engineer",
     department: "Engineering",
@@ -248,7 +272,7 @@ export default function CareersPage() {
             Don't see a specific listing that fits your profile? Send us your resume anyway. We're always looking for outstanding talents.
           </p>
           <a
-            href="mailto:support@musicreset.com?subject=General Career Inquiry"
+            href="mailto:careers@musicreset.com?subject=General Career Inquiry"
             className="inline-flex h-10 items-center justify-center rounded-md bg-foreground px-6 text-sm font-medium text-background hover:bg-foreground/90 transition-colors"
           >
             Submit Application

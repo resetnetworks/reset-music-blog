@@ -47,7 +47,7 @@ export default function JobsList({ jobs }: JobsListProps) {
 
   const handleApply = (jobTitle: string, e: React.FormEvent) => {
     e.preventDefault();
-    setAppliedStatus("Application instruction sent! Please email support@musicreset.com");
+    setAppliedStatus("Application instruction sent! Please email careers@musicreset.com");
     setTimeout(() => {
       setAppliedStatus(null);
       setActiveJob(null);
@@ -132,7 +132,7 @@ export default function JobsList({ jobs }: JobsListProps) {
                     View Details
                   </button>
                   <a
-                    href={`mailto:support@musicreset.com?subject=Application for ${encodeURIComponent(job.title)}`}
+                    href={`mailto:careers@musicreset.com?subject=Application for ${encodeURIComponent(job.title)}`}
                     className="h-8 px-3 rounded-md bg-foreground text-[11px] font-medium text-background hover:bg-foreground/90 transition-colors flex items-center"
                   >
                     Apply Now
@@ -169,42 +169,48 @@ export default function JobsList({ jobs }: JobsListProps) {
 
             {/* Modal Body */}
             <div className="p-6 space-y-6">
-              <div className="space-y-2">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Job Description
-                </h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {activeJob.description}
-                </p>
-              </div>
+              {activeJob.description && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Job Description
+                  </h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {activeJob.description}
+                  </p>
+                </div>
+              )}
 
-              <div className="space-y-3">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Core Responsibilities
-                </h4>
-                <ul className="space-y-2">
-                  {activeJob.responsibilities.map((resp, i) => (
-                    <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-foreground shrink-0" />
-                      <span>{resp}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {activeJob.responsibilities && activeJob.responsibilities.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Core Responsibilities
+                  </h4>
+                  <ul className="space-y-2">
+                    {activeJob.responsibilities.map((resp, i) => (
+                      <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-foreground shrink-0" />
+                        <span>{resp}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-              <div className="space-y-3">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Key Requirements
-                </h4>
-                <ul className="space-y-2">
-                  {activeJob.requirements.map((req, i) => (
-                    <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-foreground shrink-0" />
-                      <span>{req}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {activeJob.requirements && activeJob.requirements.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Key Requirements
+                  </h4>
+                  <ul className="space-y-2">
+                    {activeJob.requirements.map((req, i) => (
+                      <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-foreground shrink-0" />
+                        <span>{req}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <div className="p-4 bg-secondary/30 rounded-lg border border-border/40 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
@@ -228,8 +234,8 @@ export default function JobsList({ jobs }: JobsListProps) {
                 >
                   Cancel
                 </button>
-                <a
-                  href={`mailto:support@musicreset.com?subject=Application for ${encodeURIComponent(activeJob.title)}`}
+                 <a
+                  href={`mailto:careers@musicreset.com?subject=Application for ${encodeURIComponent(activeJob.title)}`}
                   className="h-9 px-4 rounded-md bg-foreground text-xs font-medium text-background hover:bg-foreground/90 transition-colors flex items-center"
                 >
                   Apply via Email

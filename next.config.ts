@@ -14,6 +14,15 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "50mb",
     },
   },
+  async redirects() {
+    return [
+      {
+        source: "/jobs",
+        destination: "/careers",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
