@@ -15,10 +15,19 @@ const JOBS_DATA = [
     type: "Full-time",
     locationType: "On-site",
     location: "Malviya Nagar, New Delhi",
-    experience: "1+ years",
-    description: "",
-    responsibilities: [],
-    requirements: []
+    experience: "2+ years",
+    description: "Develop and execute digital marketing and social media strategies that grow brand awareness, increase audience engagement, and drive customer acquisition across RESET NETWORKS’ digital platforms.",
+    responsibilities: [
+      "Plan, execute, and optimize social media campaigns across multiple digital platforms.",
+      "Manage content calendars, campaign schedules, and promotional activities for artists, events, and product launches.",
+      "Launch and monitor paid advertising campaigns while tracking performance and optimizing ROI.",
+      "Analyze campaign metrics, identify growth opportunities, and collaborate with creative teams to deliver engaging marketing content."
+    ],
+    requirements: [
+      "Degree in Marketing, Digital Marketing, Communications, Business Administration, or a related field.",
+      "Proficiency in Meta Business Suite, Meta Ads Manager, Google Ads, Google Analytics, and social media management tools.",
+      "2+ years of professional experience in social media management, digital marketing, or performance marketing with strong analytical and communication skills."
+    ]
   },
   {
     id: "video-editor-graphic-designer",
@@ -27,10 +36,23 @@ const JOBS_DATA = [
     type: "Full-time",
     locationType: "On-site",
     location: "Malviya Nagar, New Delhi",
-    experience: "1+ years",
-    description: "",
-    responsibilities: [],
-    requirements: []
+    experience: "2+ years",
+    description: "Design compelling visual content and produce high-quality videos that strengthen the RESET NETWORKS brand across digital platforms, artist campaigns, events, and marketing initiatives.",
+    responsibilities: [
+      "Design creative assets for social media platforms.",
+      "Edit promotional videos, event recaps, advertisements, and short-form content for digital platforms.",
+      "Create engaging motion graphics, animated titles, visual effects, and branded video content.",
+      "Develop basic 3D animations and product visualizations using Blender to support marketing and product storytelling.",
+      "Collaborate with marketing, product, and development teams to deliver creative projects on schedule while maintaining brand consistency."
+    ],
+    requirements: [
+      "Degree in Graphic Design, Visual Communication, Animation, Multimedia, or a related field.",
+      "Proficiency in Adobe Photoshop, Adobe Illustrator, Adobe Premiere Pro, Adobe After Effects, Blender, and other motion design tools.",
+      "Strong understanding of typography, layout design, video editing, motion graphics, color theory, and visual storytelling.",
+      "Familiarity with branding, social media content creation, and digital marketing creatives.",
+      "2+ years of professional experience in graphic design, video editing, motion graphics, or multimedia production.",
+      "Strong portfolio showcasing graphic design, video editing, motion graphics, and creative storytelling projects."
+    ]
   },
   {
     id: "devops-engineer",
