@@ -134,15 +134,10 @@ export default async function Home() {
        */}
       <section className="pt-10 pb-16" aria-label="Site introduction">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl">
-            <h1 className="text-3xl md:text-4xl lg:text-[3rem] font-semibold leading-[1.15] mb-4">
-              Music Production Tutorials, Guides &amp; Culture for Serious Producers
+          <div className="max-w-5xl">
+            <h1 className="text-xl md:text-2xl lg:text-2xl font-normal leading-[1.15] mb-4">
+              The official Reset Music Blog exploring ambient, experimental, and instrumental music through artist stories, audio technology, industry insights, and creative culture.
             </h1>
-            <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-              Reset Music covers everything from beat-making fundamentals and DAW workflows to
-              mixing, sound design, and the stories shaping music today. Practical knowledge written
-              by producers who actually use it.
-            </p>
           </div>
         </div>
       </section>
@@ -173,15 +168,6 @@ export default async function Home() {
             {mappedFeatured[0] && (
               <div className="mb-10">
                 <ArticleCard article={mappedFeatured[0]} variant="featured" />
-              </div>
-            )}
-
-            {/* Secondary Featured */}
-            {mappedFeatured.length > 1 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-border/40">
-                {mappedFeatured.slice(1).map((article: any) => (
-                  <ArticleCard key={article.id} article={article} />
-                ))}
               </div>
             )}
           </div>
