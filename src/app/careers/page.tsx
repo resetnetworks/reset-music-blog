@@ -74,6 +74,153 @@ const JOBS_DATA = [
       "Familiarity with server monitoring and log management tools.",
       "1+ years of professional experience in DevOps, systems engineering, or backend automation."
     ]
+  },
+  {
+    id: "industrial-engineer",
+    title: "Industrial Engineer",
+    department: "Operations",
+    type: "Full-time",
+    locationType: "On-site",
+    location: "Malviya Nagar, New Delhi",
+    experience: "2+ years",
+    description: "Optimize production workflows and design efficient operational systems for scaling manufacturing.",
+    responsibilities: [
+      "Analyze and design optimized workflows for product assembly and electronics manufacturing.",
+      "Improve workspace layout, space utilization, and assembly lines.",
+      "Implement rigorous quality control and quality assurance testing standards.",
+      "Optimize material routing, vendor shipping schedules, and parts storage systems."
+    ],
+    requirements: [
+      "Degree in Industrial Engineering, Operations Research, or Manufacturing Technology.",
+      "Familiarity with lean manufacturing methodologies, process mapping, and CAD tools.",
+      "2+ years of active experience in manufacturing operations or electronics fabrication environments."
+    ]
+  },
+  {
+    id: "hr-manager",
+    title: "HR Manager",
+    department: "Human Resources",
+    type: "Full-time",
+    locationType: "On-site",
+    location: "Malviya Nagar, New Delhi",
+    experience: "2+ years",
+    description: "We’re seeking an HR Manager to lead recruitment, employee engagement, and HR strategy.",
+    responsibilities: [
+      "Lead full-cycle recruitment pipelines for engineering, hardware design, and marketing roles.",
+      "Design onboarding, training programs, and performance review cycles.",
+      "Manage company policies, payroll details, legal compliance, and benefits.",
+      "Organize team-building events and foster a healthy collaborative workspace culture."
+    ],
+    requirements: [
+      "Degree in Human Resources, Business Administration, or related organizational fields.",
+      "Excellent written, verbal, and interpersonal communication skills.",
+      "2+ years of professional HR management or recruitment coordination experience."
+    ]
+  },
+  {
+    id: "ml-engineer",
+    title: "ML Engineer",
+    department: "AI & Research",
+    type: "Full-time",
+    locationType: "On-site",
+    location: "Malviya Nagar, New Delhi",
+    experience: "3+ years",
+    description: "Develop and deploy machine learning models for recommendation, classification, and audio analysis.",
+    responsibilities: [
+      "Design, train, and test recommendation algorithms for music and editorial curation.",
+      "Build audio classification and feature extraction models for music track waveforms.",
+      "Deploy ML models as scalable, low-latency APIs in serverless or cloud container architectures.",
+      "Collaborate with the data engineering team to format datasets and set up model training pipelines."
+    ],
+    requirements: [
+      "Strong proficiency in Python, PyTorch, TensorFlow, or equivalent ML libraries.",
+      "Solid understanding of digital signal processing, audio classification, or user recommendation methods.",
+      "3+ years of experience training and maintaining machine learning systems in production."
+    ]
+  },
+  {
+    id: "accountant",
+    title: "Accountant",
+    department: "Finance",
+    type: "Full-time",
+    locationType: "On-site",
+    location: "Malviya Nagar, New Delhi",
+    experience: "3+ years",
+    description: "Handle accounting, bookkeeping, and financial reporting for a growing tech company.",
+    responsibilities: [
+      "Manage company ledgers, accounts payable, accounts receivable, and bookkeeping transactions.",
+      "Prepare monthly financial statements, balance sheets, and statutory tax filings (GST, Income Tax).",
+      "Perform regular bank reconciliation, credit checks, and expense audit approvals.",
+      "Assist corporate managers in financial forecast modeling and budget monitoring."
+    ],
+    requirements: [
+      "Degree in Accounting, Commerce, or Finance.",
+      "Fluency in standard accounting tools (QuickBooks, Tally, Zoho Books, or similar).",
+      "3+ years of experience managing business accounting and reporting procedures."
+    ]
+  },
+  {
+    id: "artist-manager",
+    title: "Artist Manager",
+    department: "Talent Management",
+    type: "Full-time",
+    locationType: "On-site",
+    location: "Malviya Nagar, New Delhi",
+    experience: "1+ years",
+    description: "Work with artists to manage collaborations, schedules, contracts, and promotions.",
+    responsibilities: [
+      "Serve as the primary point of contact for collaborating musicians, producers, and creators.",
+      "Coordinate release agreements, royalty share split contracts, and deliverables.",
+      "Manage release calendars, social announcements, and digital marketing promotion campaigns.",
+      "Organize podcast recordings, live sessions, interviews, and community showcases."
+    ],
+    requirements: [
+      "1+ years of experience in the music industry, talent representation, or creative agency environments.",
+      "Strong coordination, networking, and written communications skills.",
+      "Basic understanding of music copyright, licensing, and streaming distribution platforms."
+    ]
+  },
+  {
+    id: "pcb-designer",
+    title: "PCB Designer",
+    department: "Hardware",
+    type: "Full-time",
+    locationType: "On-site",
+    location: "Malviya Nagar, New Delhi",
+    experience: "2+ years",
+    description: "Design high-quality PCB layouts for music hardware and embedded systems.",
+    responsibilities: [
+      "Design multi-layer printed circuit board (PCB) layouts for high-fidelity audio hardware.",
+      "Coordinate component selection, manage product BOMs (Bill of Materials), and consult with vendors.",
+      "Perform circuit layout calculations, signal routing, and EMI shielding optimization checks.",
+      "Compile board fabrication packages (Gerber data, drill maps, pick-and-place offsets)."
+    ],
+    requirements: [
+      "Proficiency with EDA/PCB design suites (Altium Designer, KiCad, or Autodesk EAGLE).",
+      "Familiarity with analog audio circuits, power supply design, and digital microcontrollers.",
+      "2+ years of solid experience translating board schematics to fabrication-ready designs."
+    ]
+  },
+  {
+    id: "pcb-assembler",
+    title: "PCB Assembler",
+    department: "Hardware Production",
+    type: "Full-time",
+    locationType: "On-site",
+    location: "Malviya Nagar, New Delhi",
+    experience: "1+ year",
+    description: "Assemble and test printed circuit boards for audio hardware products.",
+    responsibilities: [
+      "Solder surface-mount (SMD) and through-hole electronic components manually onto circuit boards.",
+      "Operate, configure, and monitor pick-and-place assembly machines and reflow ovens.",
+      "Perform electrical testing and diagnostic troubleshooting on completed audio hardware boards.",
+      "Maintain a safe, ESD-compliant hardware assembly station and inventory log."
+    ],
+    requirements: [
+      "Outstanding precision soldering skills for fine-pitch components (0603 packages, ICs).",
+      "Ability to interpret PCB schematics, layouts, and assembly reference diagrams.",
+      "1+ years of professional electronics assembly, rework, or testing experience."
+    ]
   }
 ];
 
@@ -83,7 +230,7 @@ export default function CareersPage() {
     "@context": "https://schema.org",
     "@type": "JobPosting",
     "title": job.title,
-    "description": `${job.description} Core Responsibilities: ${job.responsibilities.join(" ")} Requirements: ${job.requirements.join(" ")}`,
+    "description": `<p>${job.description}</p><p><strong>Core Responsibilities:</strong></p><ul>${job.responsibilities.map(r => `<li>${r}</li>`).join('')}</ul><p><strong>Requirements:</strong></p><ul>${job.requirements.map(r => `<li>${r}</li>`).join('')}</ul>`,
     "datePosted": "2026-06-17",
     "validThrough": "2027-06-17",
     "employmentType": "FULL_TIME",
@@ -148,8 +295,35 @@ export default function CareersPage() {
       {/* Jobs Interactive Area */}
       <JobsList jobs={JOBS_DATA} />
 
+      {/* Hiring Policy Section */}
+      <div className="mt-20 border-t border-border/40 pt-16 max-w-3xl mx-auto">
+        <h2 className="text-2xl font-semibold mb-6">Hiring Policy</h2>
+        <div className="text-muted-foreground space-y-4 leading-relaxed">
+          <p>
+            <strong>RESET NETWORKS (OPC) PRIVATE LIMITED</strong> is a DPIIT-recognized and certified startup under the Startup India scheme. We are an early-stage platform exploring new developments in mixed-media, electronic, and digital art forms.
+          </p>
+          <p>
+            We are committed to exceptional artistic quality and interdisciplinary innovation. Through our international network of creators, curators, and collaborators, we foster meaningful experimentation across art, music, science, and technology.
+          </p>
+          <p>
+            Our artists and collaborators work across the world and different time zones. This diversity of backgrounds and distributed culture fuels creativity, while flexibility and independence help us build sustainable, long-term collaborations.
+          </p>
+          <p className="pt-2 text-foreground font-medium">
+            As a small organization, every collaborator is an integral part of the team. We look for individuals who:
+          </p>
+          <ul className="list-disc pl-5 space-y-2 mt-2">
+            <li>Work independently, take initiative, and maintain clear, consistent communication with team members.</li>
+            <li>Have a genuine affinity for art, music, science, and technology.</li>
+            <li>Write and speak fluent English, with the ability to express ideas simply and clearly.</li>
+            <li>Are flexible and responsive to evolving project requirements.</li>
+            <li>Can contribute effectively in a fast-paced, constantly changing, and multitasking environment.</li>
+            <li>Are open to undertaking role-specific training, where required.</li>
+          </ul>
+        </div>
+      </div>
+
       {/* General application info */}
-      <div className="mt-20 border-t border-border/40 pt-16">
+      <div className="mt-16 mb-8">
         <div className="p-8 md:p-12 bg-secondary/40 rounded-xl border border-border/40 text-center max-w-3xl mx-auto">
           <h2 className="text-xl font-semibold mb-3">General Submissions</h2>
           <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
