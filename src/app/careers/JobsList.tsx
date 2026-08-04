@@ -133,7 +133,9 @@ export default function JobsList({ jobs }: JobsListProps) {
                     View Details
                   </button>
                   <a
-                    href={`mailto:careers@musicreset.com?subject=Application for ${encodeURIComponent(job.title)}`}
+                    href="https://www.opinionstage.com/page/e9926c3a-fd01-4c5b-a1e8-ab11ced2b976"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="h-8 px-3 rounded-md bg-foreground text-[11px] font-medium text-background hover:bg-foreground/90 transition-colors flex items-center"
                   >
                     Apply Now
@@ -236,10 +238,12 @@ export default function JobsList({ jobs }: JobsListProps) {
                   Cancel
                 </button>
                  <a
-                  href={`mailto:careers@musicreset.com?subject=Application for ${encodeURIComponent(activeJob.title)}`}
+                  href="https://www.opinionstage.com/page/e9926c3a-fd01-4c5b-a1e8-ab11ced2b976"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="h-9 px-4 rounded-md bg-foreground text-xs font-medium text-background hover:bg-foreground/90 transition-colors flex items-center"
                 >
-                  Apply via Email
+                  Apply Now
                 </a>
               </div>
             </div>
