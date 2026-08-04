@@ -99,11 +99,12 @@ export default function JobsList({ jobs }: JobsListProps) {
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 text-[10px] font-semibold bg-foreground/10 text-foreground rounded uppercase tracking-wider">
+                  <span className="px-2.5 py-0.5 text-[10px] font-semibold bg-red-500/10 text-red-500 rounded uppercase tracking-wider">
                     {job.type}
                   </span>
-                  <span className="text-[11px] text-muted-foreground font-mono flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> Exp: {job.experience}
+                  <span className="text-[11px] text-muted-foreground font-mono flex items-center gap-1.5">
+                    <Clock className="w-3 h-3 text-red-500 shrink-0 mt-[0.5px]" />
+                    <span className="leading-none mt-[1px]">Exp: {job.experience}</span>
                   </span>
                 </div>
                 <div>
@@ -121,7 +122,7 @@ export default function JobsList({ jobs }: JobsListProps) {
 
               <div className="flex items-center justify-between gap-3 mt-6 pt-4 border-t border-border/40">
                 <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                  <MapPin className="w-3 h-3" /> {job.location} ({job.locationType})
+                  <MapPin className="w-3 h-3 text-red-500" /> {job.location} ({job.locationType})
                 </span>
                 
                 <div className="flex items-center gap-2">
@@ -151,7 +152,7 @@ export default function JobsList({ jobs }: JobsListProps) {
             {/* Modal Header */}
             <div className="p-6 border-b border-border/60 flex items-start justify-between sticky top-0 bg-background/95 backdrop-blur">
               <div>
-                <span className="px-2 py-0.5 text-[9px] font-semibold bg-foreground/10 text-foreground rounded uppercase tracking-wider">
+                <span className="px-2 py-0.5 text-[9px] font-semibold bg-red-500/10 text-red-500 rounded uppercase tracking-wider">
                   {activeJob.type}
                 </span>
                 <h2 className="text-xl font-bold mt-2">{activeJob.title}</h2>

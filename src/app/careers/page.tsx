@@ -12,10 +12,10 @@ const JOBS_DATA = [
     id: "social-media-manager",
     title: "Social Media Manager",
     department: "Marketing",
-    type: "Intern",
+    type: "Intern / Full-time",
     locationType: "On-site",
     location: "Malviya Nagar, New Delhi",
-    experience: "2+ years",
+    experience: "Fresher",
     description: "Develop and execute digital marketing and social media strategies that grow brand awareness, increase audience engagement, and drive customer acquisition across RESET NETWORKS’ digital platforms.",
     responsibilities: [
       "Plan, execute, and optimize social media campaigns across multiple digital platforms.",
@@ -26,7 +26,7 @@ const JOBS_DATA = [
     requirements: [
       "Degree in Marketing, Digital Marketing, Communications, Business Administration, or a related field.",
       "Proficiency in Meta Business Suite, Meta Ads Manager, Google Ads, Google Analytics, and social media management tools.",
-      "2+ years of professional experience in social media management, digital marketing, or performance marketing with strong analytical and communication skills."
+      "Freshers can apply. Prior experience in social media management, digital marketing, or performance marketing is a plus."
     ]
   },
   {
@@ -79,10 +79,10 @@ const JOBS_DATA = [
     id: "industrial-engineer",
     title: "Industrial Engineer",
     department: "Operations",
-    type: "Intern",
+    type: "Intern / Full-time",
     locationType: "On-site",
     location: "Malviya Nagar, New Delhi",
-    experience: "2+ years",
+    experience: "Fresher",
     description: "Optimize production workflows and design efficient operational systems for scaling manufacturing.",
     responsibilities: [
       "Analyze and design optimized workflows for product assembly and electronics manufacturing.",
@@ -93,17 +93,17 @@ const JOBS_DATA = [
     requirements: [
       "Degree in Industrial Engineering, Operations Research, or Manufacturing Technology.",
       "Familiarity with lean manufacturing methodologies, process mapping, and CAD tools.",
-      "2+ years of active experience in manufacturing operations or electronics fabrication environments."
+      "Freshers can apply. Prior experience in manufacturing operations or electronics fabrication environments is a plus."
     ]
   },
   {
     id: "hr-manager",
     title: "HR Manager",
     department: "Human Resources",
-    type: "Intern",
+    type: "Intern / Full-time",
     locationType: "On-site",
     location: "Malviya Nagar, New Delhi",
-    experience: "2+ years",
+    experience: "Fresher",
     description: "We’re seeking an HR Manager to lead recruitment, employee engagement, and HR strategy.",
     responsibilities: [
       "Lead full-cycle recruitment pipelines for engineering, hardware design, and marketing roles.",
@@ -114,7 +114,7 @@ const JOBS_DATA = [
     requirements: [
       "Degree in Human Resources, Business Administration, or related organizational fields.",
       "Excellent written, verbal, and interpersonal communication skills.",
-      "2+ years of professional HR management or recruitment coordination experience."
+      "Freshers can apply. Prior HR management or recruitment coordination experience is a plus."
     ]
   },
   {
