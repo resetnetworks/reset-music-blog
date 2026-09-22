@@ -14,7 +14,7 @@ export const metadata = {
     type: "website",
     images: [
       {
-        url: "/og-image-1200x630.jpg",
+        url: "https://musicreset.com/og-image-1200x630.jpg",
         width: 1200,
         height: 630,
         alt: "Careers at Reset Music",
@@ -25,7 +25,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "Careers | Reset Music",
     description: "Join the team at Reset Music. Browse open positions in engineering, hardware production, operations, talent management, and finance.",
-    images: ["/og-image-1200x630.jpg"],
+    images: ["https://musicreset.com/og-image-1200x630.jpg"],
   },
 };
 
