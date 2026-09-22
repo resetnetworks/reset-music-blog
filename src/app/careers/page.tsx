@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import JobsList from "./JobsList";
+import OpinionStageWidget from "./OpinionStageWidget";
 
 export const metadata = {
   title: "Careers | Reset Music",
@@ -322,20 +323,10 @@ export default function CareersPage() {
         </div>
       </div>
 
-      {/* General application info */}
-      <div className="mt-16 mb-8">
-        <div className="p-8 md:p-12 bg-secondary/40 rounded-xl border border-border/40 text-center max-w-3xl mx-auto">
-          <h2 className="text-xl font-semibold mb-3">General Submissions</h2>
-          <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-            Don't see a specific listing that fits your profile? Send us your resume anyway. We're always looking for outstanding talents.
-          </p>
-          <a
-            href="mailto:careers@musicreset.com?subject=General Career Inquiry"
-            className="inline-flex h-10 items-center justify-center rounded-md bg-foreground px-6 text-sm font-medium text-background hover:bg-foreground/90 transition-colors"
-          >
-            Submit Application
-          </a>
-        </div>
+      {/* Application Form Widget */}
+      <div className="mt-16 mb-8 max-w-4xl mx-auto">
+        <h2 className="text-2xl font-semibold mb-6 text-center">Apply Now</h2>
+        <OpinionStageWidget />
       </div>
     </div>
   );

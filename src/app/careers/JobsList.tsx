@@ -11,6 +11,7 @@ import {
   Building,
   Mail
 } from "lucide-react";
+import OpinionStageWidget from "./OpinionStageWidget";
 
 interface Job {
   id: string;
@@ -34,6 +35,7 @@ export default function JobsList({ jobs }: JobsListProps) {
   const [selectedDept, setSelectedDept] = useState("All");
   const [activeJob, setActiveJob] = useState<Job | null>(null);
   const [appliedStatus, setAppliedStatus] = useState<string | null>(null);
+  const [showApplyModal, setShowApplyModal] = useState(false);
 
   const departments = ["All", ...Array.from(new Set(jobs.map((j) => j.department)))];
 
@@ -132,14 +134,12 @@ export default function JobsList({ jobs }: JobsListProps) {
                   >
                     View Details
                   </button>
-                  <a
-                    href="https://www.opinionstage.com/page/e9926c3a-fd01-4c5b-a1e8-ab11ced2b976"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={() => setShowApplyModal(true)}
                     className="h-8 px-3 rounded-md bg-foreground text-[11px] font-medium text-background hover:bg-foreground/90 transition-colors flex items-center"
                   >
                     Apply Now
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>
@@ -237,15 +237,31 @@ export default function JobsList({ jobs }: JobsListProps) {
                 >
                   Cancel
                 </button>
-                 <a
-                  href="https://www.opinionstage.com/page/e9926c3a-fd01-4c5b-a1e8-ab11ced2b976"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                 <button
+                  onClick={() => setShowApplyModal(true)}
                   className="h-9 px-4 rounded-md bg-foreground text-xs font-medium text-background hover:bg-foreground/90 transition-colors flex items-center"
                 >
                   Apply Now
-                </a>
+                </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Apply Modal */}
+      {showApplyModal && (
+        <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-background w-full max-w-3xl rounded-xl border border-border shadow-2xl relative max-h-[90vh] overflow-y-auto overflow-x-hidden p-6 flex flex-col">
+            <button
+              onClick={() => setShowApplyModal(false)}
+              className="absolute right-4 top-4 p-2 bg-secondary/80 hover:bg-secondary rounded-full transition-colors z-10"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-bold mb-4 text-center pr-8">Complete Your Application</h2>
+            <div className="flex-1 w-full bg-background rounded-lg">
+              <OpinionStageWidget />
             </div>
           </div>
         </div>
