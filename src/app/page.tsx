@@ -38,7 +38,7 @@ export const metadata = {
     type: "website",
     images: [
       {
-        url: "/og-default.png",
+        url: "/og-icon.png",
         width: 1200,
         height: 630,
         alt: "Reset Music — Music Production Tips, Tutorials & Culture",
@@ -50,7 +50,7 @@ export const metadata = {
     title: "Reset Music — Music Production Tips, Tutorials & Culture",
     description:
       "Deep dives into music production, sound design, and the art of making music. No filler — just real knowledge from working producers.",
-    images: ["/og-default.png"],
+    images: ["/og-icon.png"],
   },
 };
 
@@ -216,10 +216,10 @@ export default async function Home() {
        */}
       <section className="pb-16" aria-label="Latest and trending articles">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-12">
+          <div className="w-full">
 
             {/* Latest Articles */}
-            <div className="lg:col-span-2">
+            <div className="w-full">
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Latest Articles
@@ -238,41 +238,6 @@ export default async function Home() {
                 ))}
               </div>
             </div>
-
-            {/* Trending Sidebar */}
-            <aside aria-label="Trending articles">
-              <div className="flex items-center gap-2 mb-6">
-                <TrendingUp className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Most Read
-                </h2>
-              </div>
-              <ol className="space-y-0" aria-label="Most read articles list">
-                {mappedTrending.map((article: any, index: number) => (
-                  <li key={article.id}>
-                    <Link
-                      href={`/blog/${article.slug}`}
-                      className="group flex gap-4 py-4 border-b border-border/40 last:border-0"
-                    >
-                      <span
-                        className="text-2xl font-semibold text-muted-foreground/30 shrink-0 w-8"
-                        aria-hidden="true"
-                      >
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium leading-snug group-hover:opacity-70 transition-opacity line-clamp-2">
-                          {article.title}
-                        </h3>
-                        <span className="text-xs text-muted-foreground mt-1.5 inline-block">
-                          {article.authorName}
-                        </span>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ol>
-            </aside>
 
           </div>
         </div>

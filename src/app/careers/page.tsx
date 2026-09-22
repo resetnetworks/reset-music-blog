@@ -6,6 +6,27 @@ import OpinionStageWidget from "./OpinionStageWidget";
 export const metadata = {
   title: "Careers | Reset Music",
   description: "Join the team at Reset Music. Browse open positions in engineering, hardware production, operations, talent management, and finance.",
+  openGraph: {
+    title: "Careers | Reset Music",
+    description: "Join the team at Reset Music. Browse open positions in engineering, hardware production, operations, talent management, and finance.",
+    url: "https://blog.musicreset.com/careers",
+    siteName: "Reset Music",
+    type: "website",
+    images: [
+      {
+        url: "/og-icon.png",
+        width: 1200,
+        height: 630,
+        alt: "Careers at Reset Music",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Careers | Reset Music",
+    description: "Join the team at Reset Music. Browse open positions in engineering, hardware production, operations, talent management, and finance.",
+    images: ["/og-icon.png"],
+  },
 };
 
 const JOBS_DATA = [

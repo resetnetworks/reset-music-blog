@@ -11,19 +11,19 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   metadataBase: new URL("https://blog.musicreset.com"),
   title: {
-    default: "Reset Music",
+    default: "Reset Streaming Platform - Reset Music | Instrumental Music",
     template: "%s | Reset Music",
   },
-  description: "A modern editorial platform for music culture, production techniques, and artist education.",
+  description: "Stream ambient, instrumental, classical and experimental music. Built for next generation musicians, sound designers, listeners and audiophiles.",
   keywords: ["music production", "music industry", "sound design", "mixing", "mastering", "beat making", "recording techniques", "music culture"],
   openGraph: {
-    title: "Reset Music",
-    description: "A modern editorial platform for music culture, production techniques, and artist education.",
+    title: "Reset Streaming Platform - Reset Music | Instrumental Music",
+    description: "Stream ambient, instrumental, classical and experimental music. Built for next generation musicians, sound designers, listeners and audiophiles.",
     url: "https://blog.musicreset.com",
     siteName: "Reset Music",
     images: [
       {
-        url: "/og-default.png",
+        url: "https://musicreset.com/og-image-1200x630.jpg",
         width: 1200,
         height: 630,
         alt: "Reset Music",
@@ -34,11 +34,12 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Reset Music",
-    description: "A modern editorial platform for music culture, production techniques, and artist education.",
-    images: ["/og-default.png"],
+    title: "Reset Streaming Platform - Reset Music | Instrumental Music",
+    description: "Stream ambient, instrumental, classical and experimental music. Built for next generation musicians, sound designers, listeners and audiophiles.",
+    images: ["https://musicreset.com/og-image-1200x630.jpg"],
   },
 };
+
 
 export default async function RootLayout({
   children,
