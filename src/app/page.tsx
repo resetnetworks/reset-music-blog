@@ -38,7 +38,7 @@ export const metadata = {
     type: "website",
     images: [
       {
-        url: "/og-icon.png",
+        url: "/og-image-1200x630.jpg",
         width: 1200,
         height: 630,
         alt: "Reset Music — Music Production Tips, Tutorials & Culture",
@@ -50,7 +50,7 @@ export const metadata = {
     title: "Reset Music — Music Production Tips, Tutorials & Culture",
     description:
       "Deep dives into music production, sound design, and the art of making music. No filler — just real knowledge from working producers.",
-    images: ["/og-icon.png"],
+    images: ["/og-image-1200x630.jpg"],
   },
 };
 
