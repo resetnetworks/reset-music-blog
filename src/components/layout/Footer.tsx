@@ -31,11 +31,20 @@ export default function Footer() {
               <Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Articles
               </Link>
-              <Link href="/category/production" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Production
+              <Link href="/news" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                News
               </Link>
-              <Link href="/category/industry" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Industry
+              <Link href="/category/music-production" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Music Production
+              </Link>
+              <Link href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                About
+              </Link>
+              <Link href="/careers" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Careers
+              </Link>
+              <Link href="/investors" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Investor Relations
               </Link>
             </div>
           </div>
@@ -46,17 +55,20 @@ export default function Footer() {
               Topics
             </h4>
             <div className="flex flex-col gap-2">
-              <Link href="/tag/mixing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Mixing
+              <Link href="/tag/ambient" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Ambient
               </Link>
-              <Link href="/tag/sound-design" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Sound Design
+              <Link href="/tag/electronic" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Electronic
               </Link>
-              <Link href="/tag/career" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Career
+              <Link href="/tag/experimental" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Experimental
               </Link>
-              <Link href="/tag/workflow" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Workflow
+              <Link href="/tag/soundscapes" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Soundscapes
+              </Link>
+              <Link href="/tag/techno" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Techno
               </Link>
             </div>
           </div>

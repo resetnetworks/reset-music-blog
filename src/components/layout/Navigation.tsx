@@ -48,6 +48,7 @@ export default function Navigation({ categories }: { categories: Category[] }) {
             <nav className="hidden md:flex items-center gap-6">
               <Link
                 href="/"
+                prefetch={true}
                 className={`text-sm transition-colors ${
                   isHome ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
                 }`}
@@ -56,6 +57,7 @@ export default function Navigation({ categories }: { categories: Category[] }) {
               </Link>
               <Link
                 href="/blog"
+                prefetch={true}
                 className={`text-sm transition-colors ${
                   pathname === "/blog"
                     ? "text-foreground font-medium"
@@ -66,6 +68,7 @@ export default function Navigation({ categories }: { categories: Category[] }) {
               </Link>
               <Link
                 href="/news"
+                prefetch={true}
                 className={`text-sm transition-colors ${
                   pathname === "/news"
                     ? "text-foreground font-medium"
@@ -76,6 +79,7 @@ export default function Navigation({ categories }: { categories: Category[] }) {
               </Link>
               <Link
                 href="/about"
+                prefetch={true}
                 className={`text-sm transition-colors ${
                   pathname === "/about"
                     ? "text-foreground font-medium"
@@ -86,6 +90,7 @@ export default function Navigation({ categories }: { categories: Category[] }) {
               </Link>
               <Link
                 href="/careers"
+                prefetch={true}
                 className={`text-sm transition-colors ${
                   pathname === "/careers"
                     ? "text-foreground font-medium"
@@ -149,6 +154,7 @@ export default function Navigation({ categories }: { categories: Category[] }) {
           <nav className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 flex flex-col gap-4">
             <Link
               href="/"
+              prefetch={true}
               onClick={() => setMenuOpen(false)}
               className={`text-lg font-medium py-2 border-b border-border/40 ${
                 isHome ? "text-foreground font-semibold" : "text-muted-foreground"
@@ -158,6 +164,7 @@ export default function Navigation({ categories }: { categories: Category[] }) {
             </Link>
             <Link
               href="/blog"
+              prefetch={true}
               onClick={() => setMenuOpen(false)}
               className={`text-lg font-medium py-2 border-b border-border/40 ${
                 pathname === "/blog" ? "text-foreground font-semibold" : "text-muted-foreground"
@@ -167,6 +174,7 @@ export default function Navigation({ categories }: { categories: Category[] }) {
             </Link>
             <Link
               href="/news"
+              prefetch={true}
               onClick={() => setMenuOpen(false)}
               className={`text-lg font-medium py-2 border-b border-border/40 ${
                 pathname === "/news" ? "text-foreground font-semibold" : "text-muted-foreground"
@@ -176,6 +184,7 @@ export default function Navigation({ categories }: { categories: Category[] }) {
             </Link>
             <Link
               href="/about"
+              prefetch={true}
               onClick={() => setMenuOpen(false)}
               className={`text-lg font-medium py-2 border-b border-border/40 ${
                 pathname === "/about" ? "text-foreground font-semibold" : "text-muted-foreground"
@@ -185,6 +194,7 @@ export default function Navigation({ categories }: { categories: Category[] }) {
             </Link>
             <Link
               href="/careers"
+              prefetch={true}
               onClick={() => setMenuOpen(false)}
               className={`text-lg font-medium py-2 border-b border-border/40 ${
                 pathname === "/careers" ? "text-foreground font-semibold" : "text-muted-foreground"
