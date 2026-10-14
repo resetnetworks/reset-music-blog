@@ -9,12 +9,15 @@ import {
   X, 
   CheckCircle2, 
   Building,
-  Mail
+  Mail,
+  ExternalLink
 } from "lucide-react";
 import OpinionStageWidget from "./OpinionStageWidget";
+import ApplyModal from "./ApplyModal";
 
 interface Job {
   id: string;
+  mongoId?: string;
   title: string;
   department: string;
   type: string;
@@ -24,6 +27,9 @@ interface Job {
   description: string;
   responsibilities: string[];
   requirements: string[];
+  applyUrl?: string;
+  customQuestions?: any[];
+  atsKeywords?: string[];
 }
 
 interface JobsListProps {
@@ -34,7 +40,7 @@ export default function JobsList({ jobs }: JobsListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDept, setSelectedDept] = useState("All");
   const [activeJob, setActiveJob] = useState<Job | null>(null);
-  const [appliedStatus, setAppliedStatus] = useState<string | null>(null);
+  const [applyingJob, setApplyingJob] = useState<Job | null>(null);
   const [showApplyModal, setShowApplyModal] = useState(false);
 
   const departments = ["All", ...Array.from(new Set(jobs.map((j) => j.department)))];
@@ -46,15 +52,6 @@ export default function JobsList({ jobs }: JobsListProps) {
     const matchesDept = selectedDept === "All" || job.department === selectedDept;
     return matchesSearch && matchesDept;
   });
-
-  const handleApply = (jobTitle: string, e: React.FormEvent) => {
-    e.preventDefault();
-    setAppliedStatus("Application instruction sent! Please email careers@musicreset.com");
-    setTimeout(() => {
-      setAppliedStatus(null);
-      setActiveJob(null);
-    }, 4000);
-  };
 
   return (
     <div>
@@ -134,12 +131,24 @@ export default function JobsList({ jobs }: JobsListProps) {
                   >
                     View Details
                   </button>
-                  <button
-                    onClick={() => setShowApplyModal(true)}
-                    className="h-8 px-3 rounded-md bg-foreground text-[11px] font-medium text-background hover:bg-foreground/90 transition-colors flex items-center"
-                  >
-                    Apply Now
-                  </button>
+                  {job.applyUrl ? (
+                    <a
+                      href={job.applyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="h-8 px-3 rounded-md bg-foreground text-[11px] font-medium text-background hover:bg-foreground/90 transition-colors flex items-center gap-1"
+                    >
+                      Apply Now
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <button
+                      onClick={() => setApplyingJob(job)}
+                      className="h-8 px-3 rounded-md bg-foreground text-[11px] font-medium text-background hover:bg-foreground/90 transition-colors flex items-center"
+                    >
+                      Apply Now
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -237,19 +246,43 @@ export default function JobsList({ jobs }: JobsListProps) {
                 >
                   Cancel
                 </button>
-                 <button
-                  onClick={() => setShowApplyModal(true)}
-                  className="h-9 px-4 rounded-md bg-foreground text-xs font-medium text-background hover:bg-foreground/90 transition-colors flex items-center"
-                >
-                  Apply Now
-                </button>
+                {activeJob.applyUrl ? (
+                  <a
+                    href={activeJob.applyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="h-9 px-4 rounded-md bg-foreground text-xs font-medium text-background hover:bg-foreground/90 transition-colors flex items-center gap-1.5"
+                  >
+                    Apply Now
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                ) : (
+                  <button
+                    onClick={() => {
+                      const j = activeJob;
+                      setActiveJob(null);
+                      setApplyingJob(j);
+                    }}
+                    className="h-9 px-4 rounded-md bg-foreground text-xs font-medium text-background hover:bg-foreground/90 transition-colors flex items-center"
+                  >
+                    Apply Now
+                  </button>
+                )}
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Apply Modal */}
+      {/* Dynamic ATS Candidate Application Modal */}
+      {applyingJob && (
+        <ApplyModal
+          job={applyingJob}
+          onClose={() => setApplyingJob(null)}
+        />
+      )}
+
+      {/* General Apply Modal Fallback */}
       {showApplyModal && (
         <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-background w-full max-w-3xl rounded-xl border border-border shadow-2xl relative max-h-[90vh] overflow-y-auto overflow-x-hidden p-6 flex flex-col">

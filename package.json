@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "admin:manage": "node --env-file=.env scripts/manage-admin.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1051.0",
@@ -54,6 +55,7 @@
     "nanoid": "^5.1.6",
     "next": "^16.2.6",
     "next-themes": "^0.4.6",
+    "pdf-parse": "^2.4.5",
     "react": "^19.2.6",
     "react-day-picker": "^9.13.0",
     "react-dom": "^19.2.6",
@@ -76,6 +78,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.10.1",
+    "@types/pdf-parse": "^1.1.5",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@types/uuid": "^10.0.0",

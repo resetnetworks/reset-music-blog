@@ -17,7 +17,7 @@ export default async function AdminLayout({
   await dbConnect();
   const user = await AdminUser.findById(session.userId).lean();
 
-  if (!user || user.role !== "admin") {
+  if (!user || (user.role !== "admin" && user.role !== "hr")) {
     redirect("/login");
   }
 
@@ -26,7 +26,7 @@ export default async function AdminLayout({
       <div className="flex">
         <AdminSidebar user={JSON.parse(JSON.stringify(user))} />
         <main className="flex-1 min-w-0">
-          <div className="max-w-4xl mx-auto px-6 py-8">{children}</div>
+          <div className="max-w-5xl mx-auto px-6 py-8">{children}</div>
         </main>
       </div>
     </div>

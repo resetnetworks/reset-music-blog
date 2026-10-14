@@ -43,3 +43,6 @@ coverage/
 # Next.js
 .next/
 out/
+
+# Uploaded Files
+/public/uploads/

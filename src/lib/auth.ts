@@ -1,8 +1,13 @@
 import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
 
+const rawSecret = process.env.JWT_SECRET;
+if (process.env.NODE_ENV === "production" && !rawSecret) {
+  console.error("FATAL SECURITY WARNING: JWT_SECRET environment variable is missing in production!");
+}
+
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "fallback_secret_for_development_only"
+  rawSecret || "fallback_secret_for_development_only"
 );
 
 export async function createSession(userId: string, role: string) {
@@ -35,6 +40,14 @@ export async function getSession() {
   } catch (error) {
     return null;
   }
+}
+
+export async function requireAdminSession() {
+  const session = await getSession();
+  if (!session || !session.userId) {
+    throw new Error("Unauthorized: Administrator session required.");
+  }
+  return session;
 }
 
 export async function deleteSession() {

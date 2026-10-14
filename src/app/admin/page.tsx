@@ -160,7 +160,7 @@ export default async function AdminDashboard() {
                   <td className="px-4 py-3 text-muted-foreground">
                     {article.categoryName}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  <td className="px-4 py-3 text-muted-foreground" suppressHydrationWarning>
                     {article.updatedAt
                       ? new Date(article.updatedAt).toLocaleDateString()
                       : "-"}

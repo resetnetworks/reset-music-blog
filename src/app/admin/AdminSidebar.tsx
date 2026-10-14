@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, Plus, LogOut, LayoutDashboard, Tags as TagsIcon, Users, Hash } from "lucide-react";
+import { FileText, Plus, LogOut, LayoutDashboard, Tags as TagsIcon, Users, Hash, Briefcase } from "lucide-react";
 import { logoutAction } from "./actions";
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Jobs (CRM)", href: "/admin/jobs", icon: Briefcase },
   { label: "Articles", href: "/admin/articles", icon: FileText },
   { label: "New Article", href: "/admin/articles/new", icon: Plus },
   { label: "Categories", href: "/admin/categories", icon: TagsIcon },

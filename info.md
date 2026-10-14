@@ -45,8 +45,8 @@ reset-music-blog/
 │       ├── Article.ts      # Main article content & settings
 │       ├── Author.ts       # Writer bio & credentials
 │       ├── Category.ts     # Section topics
-│       └── Tag.ts          # Metadata tags
-├── seed-admin.js           # Database administrator credential seed script
+├── scripts/                # Administrative utilities
+│   └── manage-admin.js     # Secure admin user provisioning & password reset
 ├── tailwind.config.ts      # Tailwind styling rules
 ├── tsconfig.json           # Strict TypeScript configuration compiler rules
 └── next.config.ts          # Next.js bundler and server settings
@@ -102,12 +102,11 @@ To allow editors to copy and paste text directly from **Google Docs** or **Word*
 
 ## 5. Developer & Seeding Operations
 
-### 5.1 Seeding an Admin User
-To populate the initial administrator database records in MongoDB, configure your connection string in `.env` and execute:
+### 5.1 Admin Authentication & Provisioning
+Admin credentials must never be stored in plain text or committed to documentation/source control. Admin users are authenticated securely via bcrypt-hashed passwords in MongoDB and session cookies. To create or reset an admin account, run the secure admin CLI script:
 ```bash
-node seed-admin.js
+npm run admin:set-password
 ```
-*Creates `admin@resetmusic.com` with a hashed version of `password123`.*
 
 ### 5.2 Local Development Server
 Start the Next.js development server:

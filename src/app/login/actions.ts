@@ -15,18 +15,6 @@ export async function loginAction(formData: FormData) {
 
   await dbConnect();
 
-  // For initial setup: if no admin users exist, create the first one automatically
-  const adminCount = await AdminUser.countDocuments();
-  if (adminCount === 0) {
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(password, salt);
-    await AdminUser.create({
-      email,
-      passwordHash,
-      name: "Super Admin",
-      role: "admin",
-    });
-  }
 
   const user = await AdminUser.findOne({ email }).lean();
   if (!user) {
