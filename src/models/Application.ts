@@ -62,4 +62,7 @@ const ApplicationSchema = new mongoose.Schema(
   { timestamps: true, strict: false }
 );
 
+ApplicationSchema.index({ job: 1, "candidate.email": 1 });
+ApplicationSchema.index({ job: 1, "candidate.phone": 1 });
+
 export default mongoose.models.Application || mongoose.model("Application", ApplicationSchema);

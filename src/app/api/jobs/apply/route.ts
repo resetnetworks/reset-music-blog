@@ -97,36 +97,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Upload strictly to AWS S3
-    let resumeUrl = "";
-    try {
-      const uploadRes = await uploadBufferToS3(
-        buffer,
-        resumeFile.name || "resume.pdf",
-        resumeFile.type || "application/pdf"
-      );
-      resumeUrl = uploadRes.fileUrl;
-    } catch (s3Error: any) {
-      console.error("AWS S3 upload failed:", s3Error);
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: "Failed to upload resume to S3 storage. Please check your AWS S3 bucket configuration or try again." 
-        },
-        { status: 500 }
-      );
-    }
-
-    // Extract text from PDF for ATS & Contact parsing
+    // 1. Extract text from PDF for ATS & Contact parsing
     const resumeText = await extractTextFromPdfBuffer(buffer);
 
-    // Auto-extract candidate contact info from resume text & file name
+    // 2. Auto-extract candidate contact info from resume text & file name
     const emailMatch = resumeText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b/i);
-    const extractedEmail = manualEmail || (emailMatch ? emailMatch[0].toLowerCase().trim() : "applicant@musicreset.com");
+    const extractedEmail = manualEmail || (emailMatch ? emailMatch[0].toLowerCase().trim() : "");
 
     const phoneMatch = resumeText.match(/(?:\+?91[\s.-]?)?[6-9]\d{9}\b/) || 
                        resumeText.match(/(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,5}\)?[-.\s]?\d{3,5}[-.\s]?\d{3,5}/);
-    const extractedPhone = manualPhone || (phoneMatch ? phoneMatch[0].trim() : "Not provided in resume");
+    const extractedPhone = manualPhone || (phoneMatch ? phoneMatch[0].trim() : "");
 
     const linkedinMatch = resumeText.match(/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+/i);
     const extractedLinkedin = manualLinkedinUrl || (linkedinMatch 
@@ -152,7 +132,6 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // If text didn't yield a name, extract from file name (e.g. Rahul_Sharma_Resume.pdf)
       if (!extractedName && resumeFile.name) {
         const cleanBase = resumeFile.name
           .replace(/\.pdf$/i, "")
@@ -173,10 +152,61 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Calculate ATS Score & Keyword Matches
+    // 3. Duplicate Prevention Check (Check by Email or Phone for this specific role)
+    const duplicateOrConditions: any[] = [];
+    if (extractedEmail && extractedEmail.includes("@")) {
+      duplicateOrConditions.push({ "candidate.email": extractedEmail.toLowerCase() });
+    }
+    const cleanDigits = extractedPhone ? extractedPhone.replace(/\D/g, "") : "";
+    if (cleanDigits.length >= 7) {
+      const last10 = cleanDigits.slice(-10);
+      duplicateOrConditions.push({ "candidate.phone": { $regex: last10 + "$" } });
+    }
+
+    if (duplicateOrConditions.length > 0) {
+      const existingApplication = await Application.findOne({
+        job: job._id,
+        $or: duplicateOrConditions,
+      }).lean();
+
+      if (existingApplication) {
+        return NextResponse.json(
+          {
+            success: false,
+            alreadyApplied: true,
+            error: `You have already applied for ${job.title}. Our talent team has your resume on file and is reviewing your qualifications!`,
+            candidateName: existingApplication.candidate?.name || extractedName,
+            appliedDate: existingApplication.createdAt,
+          },
+          { status: 409 }
+        );
+      }
+    }
+
+    // 4. Upload strictly to AWS S3 (Only if not duplicate)
+    let resumeUrl = "";
+    try {
+      const uploadRes = await uploadBufferToS3(
+        buffer,
+        resumeFile.name || "resume.pdf",
+        resumeFile.type || "application/pdf"
+      );
+      resumeUrl = uploadRes.fileUrl;
+    } catch (s3Error: any) {
+      console.error("AWS S3 upload failed:", s3Error);
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: "Failed to upload resume to S3 storage. Please check your AWS S3 bucket configuration or try again." 
+        },
+        { status: 500 }
+      );
+    }
+
+    // 5. Calculate ATS Score & Keyword Matches
     const atsResult = calculateAtsScore(resumeText, job.atsKeywords || []);
 
-    // Save Application
+    // 6. Save Application
     const newApplication = await Application.create({
       job: job._id,
       candidate: {

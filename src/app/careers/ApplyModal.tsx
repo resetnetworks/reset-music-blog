@@ -45,6 +45,7 @@ export default function ApplyModal({ job, onClose }: ApplyModalProps) {
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [submittedName, setSubmittedName] = useState<string>("");
+  const [alreadyApplied, setAlreadyApplied] = useState<{ message: string; candidateName?: string } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -109,6 +110,15 @@ export default function ApplyModal({ job, onClose }: ApplyModalProps) {
 
       const data = await res.json();
 
+      // Handle duplicate application gracefully
+      if (data.alreadyApplied) {
+        setAlreadyApplied({
+          message: data.error || `You have already applied for ${job.title}. Our talent team has your resume on file!`,
+          candidateName: data.candidateName || "",
+        });
+        return;
+      }
+
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Failed to submit application. Please try again.");
       }
@@ -153,7 +163,32 @@ export default function ApplyModal({ job, onClose }: ApplyModalProps) {
 
         {/* Content Area */}
         <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-6">
-          {submitted ? (
+          {alreadyApplied ? (
+            <div className="py-10 text-center space-y-4 max-w-md mx-auto animate-in fade-in zoom-in-95 duration-150">
+              <div className="w-16 h-16 rounded-full bg-blue-500/10 text-blue-500 mx-auto flex items-center justify-center border border-blue-500/20 shadow-inner">
+                <CheckCircle2 className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground">Application Already Submitted</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {alreadyApplied.candidateName ? `Hello ${alreadyApplied.candidateName}, ` : ""}
+                {alreadyApplied.message}
+              </p>
+              <div className="p-4 bg-secondary/30 rounded-xl text-xs text-muted-foreground border border-border/40 text-left space-y-2">
+                <p className="font-semibold text-foreground flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-blue-500" /> Status Information:
+                </p>
+                <p>&bull; Your previous submission and resume are already active in our candidate evaluation pipeline.</p>
+                <p>&bull; To ensure fairness, we accept one application per candidate per role.</p>
+                <p>&bull; If your qualifications match our requirements, our hiring team will reach out directly.</p>
+              </div>
+              <button
+                onClick={onClose}
+                className="mt-4 px-6 py-2.5 bg-foreground text-background text-xs font-semibold rounded-lg hover:bg-foreground/90 transition-colors"
+              >
+                Understood / Close
+              </button>
+            </div>
+          ) : submitted ? (
             <div className="py-10 text-center space-y-4 max-w-md mx-auto">
               <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-500 mx-auto flex items-center justify-center border border-emerald-500/20 shadow-inner">
                 <CheckCircle2 className="w-8 h-8" />
