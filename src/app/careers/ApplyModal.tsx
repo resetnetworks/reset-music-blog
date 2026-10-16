@@ -11,14 +11,21 @@ import {
   Briefcase, 
   Loader2, 
   HelpCircle,
-  FileText
+  FileText,
+  Check,
+  Star,
+  CircleDot
 } from "lucide-react";
 
 export interface JobQuestion {
   id: string;
   question: string;
-  type: "text" | "textarea" | "select" | "boolean";
+  type: "text" | "textarea" | "select" | "radio" | "scale" | "boolean" | "checkbox";
   options?: string[];
+  scaleMin?: number;
+  scaleMax?: number;
+  scaleMinLabel?: string;
+  scaleMaxLabel?: string;
   required: boolean;
 }
 
@@ -357,6 +364,137 @@ export default function ApplyModal({ job, onClose }: ApplyModalProps) {
                               <span className="text-[11px] text-muted-foreground ml-2">
                                 Selected: <strong>{answers[q.id]}</strong>
                               </span>
+                            )}
+                          </div>
+                        ) : q.type === "radio" ? (
+                          /* Multiple Choice (Single Select: e.g. 25%, 50%, 75%, 100%) */
+                          <div className="space-y-2 pt-1">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {(q.options && q.options.length > 0 ? q.options : ["25%", "50%", "75%", "100%"]).map((opt, optIdx) => {
+                                const isSelected = answers[q.id] === opt;
+                                return (
+                                  <button
+                                    key={optIdx}
+                                    type="button"
+                                    onClick={() => handleAnswerChange(q.id, opt)}
+                                    className={`flex items-center justify-between p-3 rounded-xl border text-left text-xs font-medium transition-all ${
+                                      isSelected
+                                        ? "bg-foreground text-background border-foreground shadow-sm"
+                                        : "bg-background border-border text-foreground hover:bg-secondary/50 hover:border-foreground/30"
+                                    }`}
+                                  >
+                                    <span className="flex items-center gap-2.5">
+                                      <span
+                                        className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                                          isSelected ? "border-background bg-background text-foreground" : "border-muted-foreground/40"
+                                        }`}
+                                      >
+                                        {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-foreground" />}
+                                      </span>
+                                      <span>{opt}</span>
+                                    </span>
+                                    {isSelected && <Check className="w-3.5 h-3.5 shrink-0" />}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            {answers[q.id] && (
+                              <p className="text-[11px] text-muted-foreground px-0.5">
+                                Selected: <span className="font-semibold text-foreground">{answers[q.id]}</span>
+                              </p>
+                            )}
+                          </div>
+                        ) : q.type === "scale" ? (
+                          /* Linear Rating Scale (e.g. 1 to 5 or 1 to 10) */
+                          <div className="space-y-2 pt-1">
+                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                              {Array.from({ length: q.scaleMax || 5 }, (_, i) => i + 1).map((num) => {
+                                const stepDesc = q.options && q.options[num - 1] ? q.options[num - 1] : "";
+                                const isSelected = answers[q.id]?.startsWith(`${num} `) || answers[q.id]?.startsWith(`${num}/`) || answers[q.id] === String(num);
+                                return (
+                                  <button
+                                    key={num}
+                                    type="button"
+                                    onClick={() => {
+                                      const fullAns = `${num} / ${q.scaleMax || 5}${
+                                        stepDesc
+                                          ? ` – ${stepDesc}`
+                                          : num === 1 && q.scaleMinLabel
+                                          ? ` (${q.scaleMinLabel})`
+                                          : num === (q.scaleMax || 5) && q.scaleMaxLabel
+                                          ? ` (${q.scaleMaxLabel})`
+                                          : ""
+                                      }`;
+                                      handleAnswerChange(q.id, fullAns);
+                                    }}
+                                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl border text-xs sm:text-sm font-bold transition-all flex items-center justify-center ${
+                                      isSelected
+                                        ? "bg-foreground text-background border-foreground shadow-sm scale-105"
+                                        : "bg-background border-border text-foreground hover:bg-secondary hover:border-foreground/40"
+                                    }`}
+                                  >
+                                    {num}
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            <div className="flex items-center justify-between text-[11px] text-muted-foreground px-1">
+                              <span>1: {q.scaleMinLabel || "Beginner"}</span>
+                              <span>{q.scaleMax || 5}: {q.scaleMaxLabel || "Expert"}</span>
+                            </div>
+
+                            {answers[q.id] && (
+                              <p className="text-[11px] text-emerald-500 font-medium px-0.5 flex items-center gap-1.5">
+                                <Check className="w-3.5 h-3.5" />
+                                <span>
+                                  Selected: <strong className="text-foreground">{answers[q.id]}</strong>
+                                </span>
+                              </p>
+                            )}
+                          </div>
+                        ) : q.type === "checkbox" ? (
+                          /* Multi-Select Checkboxes */
+                          <div className="space-y-2 pt-1">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {(q.options || []).map((opt, optIdx) => {
+                                const currentList = answers[q.id] ? answers[q.id].split(", ").map((s) => s.trim()) : [];
+                                const isChecked = currentList.includes(opt);
+                                return (
+                                  <button
+                                    key={optIdx}
+                                    type="button"
+                                    onClick={() => {
+                                      let nextList: string[];
+                                      if (isChecked) {
+                                        nextList = currentList.filter((item) => item !== opt);
+                                      } else {
+                                        nextList = [...currentList, opt];
+                                      }
+                                      handleAnswerChange(q.id, nextList.join(", "));
+                                    }}
+                                    className={`flex items-center gap-2.5 p-3 rounded-xl border text-left text-xs font-medium transition-all ${
+                                      isChecked
+                                        ? "bg-secondary text-foreground border-foreground/50 shadow-sm"
+                                        : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-secondary/40"
+                                    }`}
+                                  >
+                                    <span
+                                      className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                                        isChecked ? "bg-foreground border-foreground text-background" : "border-border"
+                                      }`}
+                                    >
+                                      {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+                                    </span>
+                                    <span>{opt}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            {answers[q.id] && (
+                              <p className="text-[11px] text-muted-foreground px-0.5">
+                                Selected: <span className="font-semibold text-foreground">{answers[q.id]}</span>
+                              </p>
                             )}
                           </div>
                         ) : q.type === "select" && q.options && q.options.length > 0 ? (

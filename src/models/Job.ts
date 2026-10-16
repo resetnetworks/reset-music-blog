@@ -22,8 +22,12 @@ export interface IJob {
   customQuestions?: {
     id: string;
     question: string;
-    type: "text" | "textarea" | "select" | "boolean";
+    type: "text" | "textarea" | "select" | "radio" | "scale" | "boolean" | "checkbox";
     options?: string[];
+    scaleMin?: number;
+    scaleMax?: number;
+    scaleMinLabel?: string;
+    scaleMaxLabel?: string;
     required: boolean;
   }[];
   atsKeywords?: string[];
@@ -52,8 +56,16 @@ const JobSchema = new mongoose.Schema(
         _id: false,
         id: { type: String, required: true },
         question: { type: String, required: true },
-        type: { type: String, enum: ["text", "textarea", "select", "boolean"], default: "text" },
+        type: {
+          type: String,
+          enum: ["text", "textarea", "select", "radio", "scale", "boolean", "checkbox"],
+          default: "text",
+        },
         options: [{ type: String }],
+        scaleMin: { type: Number, default: 1 },
+        scaleMax: { type: Number, default: 5 },
+        scaleMinLabel: { type: String, default: "" },
+        scaleMaxLabel: { type: String, default: "" },
         required: { type: Boolean, default: false },
       },
     ],

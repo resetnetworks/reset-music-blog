@@ -18,15 +18,22 @@ import {
   Sliders,
   Check,
   FileText,
-  X
+  X,
+  CircleDot,
+  Star,
+  CheckSquare
 } from "lucide-react";
 import { createJobAction, updateJobAction } from "./actions";
 
 export interface JobQuestion {
   id: string;
   question: string;
-  type: "text" | "textarea" | "select" | "boolean";
+  type: "text" | "textarea" | "select" | "radio" | "scale" | "boolean" | "checkbox";
   options?: string[];
+  scaleMin?: number;
+  scaleMax?: number;
+  scaleMinLabel?: string;
+  scaleMaxLabel?: string;
   required: boolean;
 }
 
@@ -144,11 +151,16 @@ export default function JobForm({ initialData, isEdit }: JobFormProps) {
   };
 
   // Custom Questions Handlers
-  const handleAddQuestion = () => {
+  const handleAddQuestion = (type: JobQuestion["type"] = "text") => {
     const newQuestion: JobQuestion = {
       id: "q_" + Date.now().toString().slice(-6),
       question: "",
-      type: "text",
+      type,
+      options: type === "radio" || type === "select" || type === "checkbox" ? ["25%", "50%", "75%", "100%"] : [],
+      scaleMin: 1,
+      scaleMax: 5,
+      scaleMinLabel: "Beginner",
+      scaleMaxLabel: "Expert",
       required: true,
     };
     setCustomQuestions([...customQuestions, newQuestion]);
@@ -156,7 +168,24 @@ export default function JobForm({ initialData, isEdit }: JobFormProps) {
 
   const handleUpdateQuestion = (index: number, fields: Partial<JobQuestion>) => {
     const updated = [...customQuestions];
-    updated[index] = { ...updated[index], ...fields };
+    const current = updated[index];
+    const newType = fields.type ?? current.type;
+
+    let options = fields.options ?? current.options;
+    if ((newType === "radio" || newType === "select" || newType === "checkbox") && (!options || options.length === 0)) {
+      options = ["25%", "50%", "75%", "100%"];
+    }
+
+    updated[index] = {
+      ...current,
+      ...fields,
+      type: newType,
+      options,
+      scaleMin: fields.scaleMin ?? current.scaleMin ?? 1,
+      scaleMax: fields.scaleMax ?? current.scaleMax ?? 5,
+      scaleMinLabel: fields.scaleMinLabel ?? current.scaleMinLabel ?? "Beginner",
+      scaleMaxLabel: fields.scaleMaxLabel ?? current.scaleMaxLabel ?? "Expert",
+    };
     setCustomQuestions(updated);
   };
 
@@ -164,11 +193,61 @@ export default function JobForm({ initialData, isEdit }: JobFormProps) {
     setCustomQuestions(customQuestions.filter((_, i) => i !== index));
   };
 
-  const handleAddPresetQuestion = (presetText: string, type: "text" | "textarea" | "boolean" = "text") => {
+  const handleAddOption = (questionIndex: number) => {
+    const updated = [...customQuestions];
+    const currentOpts = updated[questionIndex].options || [];
+    updated[questionIndex] = {
+      ...updated[questionIndex],
+      options: [...currentOpts, `Option ${currentOpts.length + 1}`],
+    };
+    setCustomQuestions(updated);
+  };
+
+  const handleUpdateOption = (questionIndex: number, optIndex: number, val: string) => {
+    const updated = [...customQuestions];
+    const currentOpts = [...(updated[questionIndex].options || [])];
+    currentOpts[optIndex] = val;
+    updated[questionIndex] = {
+      ...updated[questionIndex],
+      options: currentOpts,
+    };
+    setCustomQuestions(updated);
+  };
+
+  const handleRemoveOption = (questionIndex: number, optIndex: number) => {
+    const updated = [...customQuestions];
+    const currentOpts = (updated[questionIndex].options || []).filter((_, i) => i !== optIndex);
+    updated[questionIndex] = {
+      ...updated[questionIndex],
+      options: currentOpts,
+    };
+    setCustomQuestions(updated);
+  };
+
+  const handleSetPresetOptions = (questionIndex: number, presetOptions: string[]) => {
+    const updated = [...customQuestions];
+    updated[questionIndex] = {
+      ...updated[questionIndex],
+      options: presetOptions,
+    };
+    setCustomQuestions(updated);
+  };
+
+  const handleAddPresetQuestion = (
+    presetText: string,
+    type: JobQuestion["type"] = "text",
+    options?: string[],
+    scale?: { min: number; max: number; minLabel?: string; maxLabel?: string }
+  ) => {
     const newQuestion: JobQuestion = {
       id: "q_" + Date.now().toString().slice(-6),
       question: presetText,
       type,
+      options: options || (type === "radio" || type === "select" || type === "checkbox" ? ["25%", "50%", "75%", "100%"] : []),
+      scaleMin: scale?.min ?? 1,
+      scaleMax: scale?.max ?? 5,
+      scaleMinLabel: scale?.minLabel ?? "Beginner",
+      scaleMaxLabel: scale?.maxLabel ?? "Expert",
       required: true,
     };
     setCustomQuestions([...customQuestions, newQuestion]);
@@ -574,7 +653,7 @@ export default function JobForm({ initialData, isEdit }: JobFormProps) {
           </div>
           <button
             type="button"
-            onClick={handleAddQuestion}
+            onClick={() => handleAddQuestion("text")}
             className="px-3 py-1.5 bg-foreground text-background rounded-md text-xs font-medium hover:bg-foreground/90 flex items-center gap-1.5 transition-colors self-start sm:self-auto"
           >
             <Plus className="w-3.5 h-3.5" /> Add Question
@@ -586,17 +665,44 @@ export default function JobForm({ initialData, isEdit }: JobFormProps) {
           <span className="font-medium text-foreground text-[11px]">Quick Add:</span>
           <button
             type="button"
+            onClick={() => handleAddPresetQuestion(
+              "How proficient are you in Adobe Photoshop / Premiere Pro?", 
+              "radio", 
+              ["25% (Beginner)", "50% (Intermediate)", "75% (Proficient)", "100% (Expert)"]
+            )}
+            className="px-2 py-1 rounded bg-secondary/80 hover:bg-secondary text-[11px] transition-colors border border-border/40 flex items-center gap-1"
+          >
+            <CircleDot className="w-3 h-3 text-blue-500" /> + Photoshop / Tool (25%-100%)
+          </button>
+          <button
+            type="button"
+            onClick={() => handleAddPresetQuestion(
+              "Rate your overall expertise for this role on a scale of 1 to 5",
+              "scale",
+              [],
+              { min: 1, max: 5, minLabel: "Beginner", maxLabel: "Expert" }
+            )}
+            className="px-2 py-1 rounded bg-secondary/80 hover:bg-secondary text-[11px] transition-colors border border-border/40 flex items-center gap-1"
+          >
+            <Star className="w-3 h-3 text-amber-500" /> + Linear Skill Rating (1-5)
+          </button>
+          <button
+            type="button"
+            onClick={() => handleAddPresetQuestion(
+              "Which software and tools do you use regularly?",
+              "checkbox",
+              ["Photoshop", "Illustrator", "Premiere Pro", "After Effects", "Figma", "Blender"]
+            )}
+            className="px-2 py-1 rounded bg-secondary/80 hover:bg-secondary text-[11px] transition-colors border border-border/40 flex items-center gap-1"
+          >
+            <CheckSquare className="w-3 h-3 text-emerald-500" /> + Tools Checklist
+          </button>
+          <button
+            type="button"
             onClick={() => handleAddPresetQuestion("Link to your portfolio / showreel / Behance (Google Drive or web link)", "text")}
             className="px-2 py-1 rounded bg-secondary/80 hover:bg-secondary text-[11px] transition-colors border border-border/40"
           >
             + Portfolio Link
-          </button>
-          <button
-            type="button"
-            onClick={() => handleAddPresetQuestion("Which video editing / motion design software do you feel most proficient in?", "text")}
-            className="px-2 py-1 rounded bg-secondary/80 hover:bg-secondary text-[11px] transition-colors border border-border/40"
-          >
-            + Software Proficiency
           </button>
           <button
             type="button"
@@ -623,7 +729,7 @@ export default function JobForm({ initialData, isEdit }: JobFormProps) {
               </p>
               <button
                 type="button"
-                onClick={handleAddQuestion}
+                onClick={() => handleAddQuestion("text")}
                 className="mt-2 text-xs font-medium text-foreground hover:underline inline-flex items-center gap-1"
               >
                 <Plus className="w-3.5 h-3.5" /> Add First Question
@@ -633,8 +739,9 @@ export default function JobForm({ initialData, isEdit }: JobFormProps) {
             customQuestions.map((q, idx) => (
               <div
                 key={q.id || idx}
-                className="p-4 rounded-lg border border-border bg-secondary/10 space-y-3 relative group"
+                className="p-4 rounded-lg border border-border bg-secondary/10 space-y-3.5 relative group"
               >
+                {/* Question Header & Title */}
                 <div className="flex items-start justify-between gap-3">
                   <span className="text-xs font-mono font-bold text-muted-foreground bg-secondary px-2 py-0.5 rounded">
                     Q{idx + 1}
@@ -643,7 +750,7 @@ export default function JobForm({ initialData, isEdit }: JobFormProps) {
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Please share links to your best 3 video edits..."
+                      placeholder="e.g. How much are you able to use Photoshop? or Rate your skills..."
                       value={q.question}
                       onChange={(e) => handleUpdateQuestion(idx, { question: e.target.value })}
                       className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm outline-none focus:ring-1 focus:ring-foreground transition-all"
@@ -659,16 +766,21 @@ export default function JobForm({ initialData, isEdit }: JobFormProps) {
                   </button>
                 </div>
 
+                {/* Answer Type Selector & Required Checkbox */}
                 <div className="flex flex-wrap items-center gap-4 text-xs pt-1 border-t border-border/40">
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">Answer Type:</span>
                     <select
                       value={q.type}
                       onChange={(e) => handleUpdateQuestion(idx, { type: e.target.value as any })}
-                      className="px-2 py-1 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-foreground"
+                      className="px-2.5 py-1 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-foreground font-medium"
                     >
                       <option value="text">Short Text (Single Line)</option>
                       <option value="textarea">Long Answer (Paragraph)</option>
+                      <option value="radio">Multiple Choice (Single Select: e.g. 25%, 50%, 75%, 100%)</option>
+                      <option value="scale">Linear Rating Scale (Rate 1 to 5 or 1 to 10)</option>
+                      <option value="checkbox">Multi-Select (Check all that apply)</option>
+                      <option value="select">Dropdown Menu</option>
                       <option value="boolean">Yes / No Toggle</option>
                     </select>
                   </div>
@@ -683,6 +795,142 @@ export default function JobForm({ initialData, isEdit }: JobFormProps) {
                     <span>Required to answer</span>
                   </label>
                 </div>
+
+                {/* Options Manager (for Multiple Choice / Radio / Dropdown / Checkboxes) */}
+                {(q.type === "radio" || q.type === "select" || q.type === "checkbox") && (
+                  <div className="p-3.5 rounded-lg bg-background/80 border border-border/70 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <CircleDot className="w-3.5 h-3.5 text-blue-500" /> Options (Choice Items):
+                      </span>
+                      <div className="flex flex-wrap items-center gap-1">
+                        <span className="text-[10px] text-muted-foreground mr-1">Presets:</span>
+                        <button
+                          type="button"
+                          onClick={() => handleSetPresetOptions(idx, ["25%", "50%", "75%", "100%"])}
+                          className="px-2 py-0.5 rounded bg-secondary hover:bg-secondary/80 text-[10px] text-muted-foreground hover:text-foreground border border-border/50"
+                        >
+                          25% | 50% | 75% | 100%
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSetPresetOptions(idx, ["Beginner", "Intermediate", "Advanced", "Expert"])}
+                          className="px-2 py-0.5 rounded bg-secondary hover:bg-secondary/80 text-[10px] text-muted-foreground hover:text-foreground border border-border/50"
+                        >
+                          Skill Levels
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSetPresetOptions(idx, ["Immediate", "15 Days", "30 Days", "60+ Days"])}
+                          className="px-2 py-0.5 rounded bg-secondary hover:bg-secondary/80 text-[10px] text-muted-foreground hover:text-foreground border border-border/50"
+                        >
+                          Notice Periods
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {(q.options || []).map((opt, optIdx) => (
+                        <div key={optIdx} className="flex items-center gap-2">
+                          <span className="text-[11px] text-muted-foreground font-mono w-5 text-right shrink-0">
+                            {optIdx + 1}.
+                          </span>
+                          <input
+                            type="text"
+                            value={opt}
+                            placeholder={`e.g. ${optIdx === 0 ? "25%" : optIdx === 1 ? "50%" : "Option"}`}
+                            onChange={(e) => handleUpdateOption(idx, optIdx, e.target.value)}
+                            className="flex-1 px-2.5 py-1.5 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-foreground"
+                          />
+                          {(q.options || []).length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveOption(idx, optIdx)}
+                              className="p-1.5 text-muted-foreground hover:text-red-500 rounded hover:bg-red-500/10 transition-colors"
+                              title="Delete option"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleAddOption(idx)}
+                      className="px-2.5 py-1 border border-border/80 bg-secondary/50 hover:bg-secondary rounded text-[11px] font-medium flex items-center gap-1 transition-colors text-foreground"
+                    >
+                      <Plus className="w-3 h-3" /> Add Choice
+                    </button>
+                  </div>
+                )}
+
+                {/* Linear Scale / Rating Configuration */}
+                {q.type === "scale" && (
+                  <div className="p-3.5 rounded-lg bg-background/80 border border-border/70 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <Star className="w-3.5 h-3.5 text-amber-500" /> Linear Rating Scale Configuration:
+                      </span>
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <span className="text-muted-foreground text-[11px]">Scale Range:</span>
+                        <select
+                          value={q.scaleMax || 5}
+                          onChange={(e) => handleUpdateQuestion(idx, { scaleMax: Number(e.target.value) })}
+                          className="px-2 py-1 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-foreground"
+                        >
+                          <option value={5}>1 to 5 (Standard Rating)</option>
+                          <option value={10}>1 to 10 (Detailed Rating)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div className="space-y-1">
+                        <label className="text-[11px] text-muted-foreground">Label for 1 (Min / Lowest):</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Beginner or Poor"
+                          value={q.scaleMinLabel ?? "Beginner"}
+                          onChange={(e) => handleUpdateQuestion(idx, { scaleMinLabel: e.target.value })}
+                          className="w-full px-2.5 py-1.5 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-foreground"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] text-muted-foreground">
+                          Label for {q.scaleMax || 5} (Max / Highest):
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Expert or Pro"
+                          value={q.scaleMaxLabel ?? "Expert"}
+                          onChange={(e) => handleUpdateQuestion(idx, { scaleMaxLabel: e.target.value })}
+                          className="w-full px-2.5 py-1.5 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-foreground"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Scale Live Preview for HR */}
+                    <div className="pt-2 border-t border-border/40">
+                      <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">Candidate Preview:</p>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {Array.from({ length: q.scaleMax || 5 }, (_, i) => i + 1).map((num) => (
+                          <span
+                            key={num}
+                            className="w-8 h-8 rounded-lg border border-border bg-secondary/50 text-xs font-semibold flex items-center justify-center text-foreground"
+                          >
+                            {num}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-1 px-1">
+                        <span>1: {q.scaleMinLabel || "Beginner"}</span>
+                        <span>{q.scaleMax || 5}: {q.scaleMaxLabel || "Expert"}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}
