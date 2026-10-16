@@ -405,47 +405,72 @@ export default function ApplyModal({ job, onClose }: ApplyModalProps) {
                             )}
                           </div>
                         ) : q.type === "scale" ? (
-                          /* Linear Rating Scale (e.g. 1 to 5 or 1 to 10) */
-                          <div className="space-y-2 pt-1">
-                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                              {Array.from({ length: q.scaleMax || 5 }, (_, i) => i + 1).map((num) => {
-                                const stepDesc = q.options && q.options[num - 1] ? q.options[num - 1] : "";
-                                const isSelected = answers[q.id]?.startsWith(`${num} `) || answers[q.id]?.startsWith(`${num}/`) || answers[q.id] === String(num);
-                                return (
-                                  <button
-                                    key={num}
-                                    type="button"
-                                    onClick={() => {
-                                      const fullAns = `${num} / ${q.scaleMax || 5}${
-                                        stepDesc
-                                          ? ` – ${stepDesc}`
-                                          : num === 1 && q.scaleMinLabel
-                                          ? ` (${q.scaleMinLabel})`
-                                          : num === (q.scaleMax || 5) && q.scaleMaxLabel
-                                          ? ` (${q.scaleMaxLabel})`
-                                          : ""
-                                      }`;
-                                      handleAnswerChange(q.id, fullAns);
-                                    }}
-                                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl border text-xs sm:text-sm font-bold transition-all flex items-center justify-center ${
-                                      isSelected
-                                        ? "bg-foreground text-background border-foreground shadow-sm scale-105"
-                                        : "bg-background border-border text-foreground hover:bg-secondary hover:border-foreground/40"
-                                    }`}
-                                  >
-                                    {num}
-                                  </button>
-                                );
-                              })}
-                            </div>
-
-                            <div className="flex items-center justify-between text-[11px] text-muted-foreground px-1">
-                              <span>1: {q.scaleMinLabel || "Beginner"}</span>
-                              <span>{q.scaleMax || 5}: {q.scaleMaxLabel || "Expert"}</span>
-                            </div>
+                          /* Linear Rating Scale / Direct Option Selection */
+                          <div className="space-y-1.5 pt-1">
+                            {q.options && q.options.length > 0 ? (
+                              <div className="space-y-1.5">
+                                {q.options.slice(0, q.scaleMax || 5).map((desc, optIdx) => {
+                                  const num = optIdx + 1;
+                                  const isSelected =
+                                    answers[q.id]?.startsWith(`${num} `) ||
+                                    answers[q.id]?.startsWith(`${num}/`) ||
+                                    answers[q.id] === desc;
+                                  return (
+                                    <div
+                                      key={optIdx}
+                                      onClick={() => {
+                                        const fullAns = `${num} / ${q.scaleMax || 5} – ${desc}`;
+                                        handleAnswerChange(q.id, fullAns);
+                                      }}
+                                      className={`flex items-start justify-between gap-3 p-3 rounded-xl cursor-pointer transition-all border text-xs ${
+                                        isSelected
+                                          ? "bg-foreground text-background border-foreground shadow-sm font-medium"
+                                          : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-secondary/40 hover:border-foreground/30"
+                                      }`}
+                                    >
+                                      <div className="flex items-start gap-3">
+                                        <span
+                                          className={`w-5 h-5 rounded-md text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5 ${
+                                            isSelected
+                                              ? "bg-background text-foreground"
+                                              : "bg-secondary text-foreground border border-border/60"
+                                          }`}
+                                        >
+                                          {num}
+                                        </span>
+                                        <span className="leading-relaxed pt-0.5">{desc}</span>
+                                      </div>
+                                      {isSelected && <Check className="w-4 h-4 shrink-0 mt-0.5" />}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              /* Fallback if no specific descriptions exist */
+                              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                {Array.from({ length: q.scaleMax || 5 }, (_, i) => i + 1).map((num) => {
+                                  const isSelected =
+                                    answers[q.id] === String(num) || answers[q.id]?.startsWith(`${num} /`);
+                                  return (
+                                    <button
+                                      key={num}
+                                      type="button"
+                                      onClick={() => handleAnswerChange(q.id, `${num} / ${q.scaleMax || 5}`)}
+                                      className={`w-10 h-10 rounded-xl border text-xs sm:text-sm font-bold transition-all flex items-center justify-center ${
+                                        isSelected
+                                          ? "bg-foreground text-background border-foreground shadow-sm scale-105"
+                                          : "bg-background border-border text-foreground hover:bg-secondary hover:border-foreground/40"
+                                      }`}
+                                    >
+                                      {num}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
 
                             {answers[q.id] && (
-                              <p className="text-[11px] text-emerald-500 font-medium px-0.5 flex items-center gap-1.5">
+                              <p className="text-[11px] text-emerald-500 font-medium px-0.5 flex items-center gap-1.5 pt-0.5">
                                 <Check className="w-3.5 h-3.5" />
                                 <span>
                                   Selected: <strong className="text-foreground">{answers[q.id]}</strong>
