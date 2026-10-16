@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import JobsList from "./JobsList";
-import OpinionStageWidget from "./OpinionStageWidget";
 import dbConnect from "@/lib/mongoose";
 import Job from "@/models/Job";
 import { ensureJobsSeeded, INITIAL_JOBS } from "@/lib/seedJobs";
@@ -162,7 +161,7 @@ export default async function CareersPage() {
       <JobsList jobs={jobsData} />
 
       {/* Hiring Policy Section */}
-      <div className="mt-20 border-t border-border/40 pt-16 max-w-3xl mx-auto">
+      <div className="mt-20 border-t border-border/40 pt-16 max-w-3xl mx-auto mb-16">
         <h2 className="text-2xl font-semibold mb-6">Hiring Policy</h2>
         <div className="text-muted-foreground space-y-4 leading-relaxed">
           <p>
@@ -186,12 +185,6 @@ export default async function CareersPage() {
             <li>Are open to undertaking role-specific training, where required.</li>
           </ul>
         </div>
-      </div>
-
-      {/* Application Form Widget */}
-      <div className="mt-16 mb-8 max-w-4xl mx-auto">
-        <h2 className="text-2xl font-semibold mb-6 text-center">Apply Now</h2>
-        <OpinionStageWidget />
       </div>
     </div>
   );

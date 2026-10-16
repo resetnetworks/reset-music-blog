@@ -12,7 +12,6 @@ import {
   Mail,
   ExternalLink
 } from "lucide-react";
-import OpinionStageWidget from "./OpinionStageWidget";
 import ApplyModal from "./ApplyModal";
 
 interface Job {
@@ -41,7 +40,6 @@ export default function JobsList({ jobs }: JobsListProps) {
   const [selectedDept, setSelectedDept] = useState("All");
   const [activeJob, setActiveJob] = useState<Job | null>(null);
   const [applyingJob, setApplyingJob] = useState<Job | null>(null);
-  const [showApplyModal, setShowApplyModal] = useState(false);
 
   const departments = ["All", ...Array.from(new Set(jobs.map((j) => j.department)))];
 
@@ -280,24 +278,6 @@ export default function JobsList({ jobs }: JobsListProps) {
           job={applyingJob}
           onClose={() => setApplyingJob(null)}
         />
-      )}
-
-      {/* General Apply Modal Fallback */}
-      {showApplyModal && (
-        <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-background w-full max-w-3xl rounded-xl border border-border shadow-2xl relative max-h-[90vh] overflow-y-auto overflow-x-hidden p-6 flex flex-col">
-            <button
-              onClick={() => setShowApplyModal(false)}
-              className="absolute right-4 top-4 p-2 bg-secondary/80 hover:bg-secondary rounded-full transition-colors z-10"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <h2 className="text-xl font-bold mb-4 text-center pr-8">Complete Your Application</h2>
-            <div className="flex-1 w-full bg-background rounded-lg">
-              <OpinionStageWidget />
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );
