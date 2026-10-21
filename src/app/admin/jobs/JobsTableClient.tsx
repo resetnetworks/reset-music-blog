@@ -17,8 +17,10 @@ import {
   Clock,
   Link2,
   Users,
-  ChevronRight
+  ChevronRight,
+  UploadCloud
 } from "lucide-react";
+import AdminUploadResumeModal from "./AdminUploadResumeModal";
 import { deleteJobAction, toggleJobStatusAction } from "./actions";
 
 interface JobItem {
@@ -34,6 +36,7 @@ interface JobItem {
   applyUrl?: string;
   status: "active" | "draft" | "closed";
   applicantCount?: number;
+  atsKeywords?: string[];
   createdAt?: string;
 }
 
@@ -48,6 +51,18 @@ export default function JobsTableClient({ jobs: initialJobs }: JobsTableClientPr
   const [deptFilter, setDeptFilter] = useState("all");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [selectedUploadJobId, setSelectedUploadJobId] = useState<string>("");
+
+  const handleUploadSuccess = (newApp: any) => {
+    setJobs((prev) =>
+      prev.map((j) =>
+        j.id === newApp.jobId
+          ? { ...j, applicantCount: (j.applicantCount || 0) + 1 }
+          : j
+      )
+    );
+  };
 
   const departments = ["all", ...Array.from(new Set(jobs.map((j) => j.department)))];
 
@@ -149,9 +164,21 @@ export default function JobsTableClient({ jobs: initialJobs }: JobsTableClientPr
             ))}
           </select>
 
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedUploadJobId(jobs[0]?.id || "");
+              setUploadModalOpen(true);
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-border bg-background hover:bg-secondary text-foreground text-xs font-semibold rounded-md transition-colors whitespace-nowrap shadow-xs ml-auto sm:ml-0"
+          >
+            <UploadCloud className="w-3.5 h-3.5" />
+            Upload Resume (ATS)
+          </button>
+
           <Link
             href="/admin/jobs/new"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-foreground text-background text-xs font-medium rounded-md hover:bg-foreground/90 transition-colors whitespace-nowrap ml-auto sm:ml-0"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-foreground text-background text-xs font-medium rounded-md hover:bg-foreground/90 transition-colors whitespace-nowrap"
           >
             <Plus className="w-3.5 h-3.5" />
             New Job
@@ -265,6 +292,16 @@ export default function JobsTableClient({ jobs: initialJobs }: JobsTableClientPr
                     <td className="px-4 py-3.5 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         <button
+                          onClick={() => {
+                            setSelectedUploadJobId(job.id);
+                            setUploadModalOpen(true);
+                          }}
+                          className="p-1.5 text-muted-foreground hover:text-foreground rounded hover:bg-secondary transition-colors"
+                          title="Upload Resume to Test ATS for this Role"
+                        >
+                          <UploadCloud className="w-3.5 h-3.5" />
+                        </button>
+                        <button
                           onClick={() => handleToggleStatus(job)}
                           className="p-1.5 text-muted-foreground hover:text-foreground rounded hover:bg-secondary transition-colors"
                           title={job.status === "active" ? "Mark as Closed" : "Mark as Active"}
@@ -329,6 +366,22 @@ export default function JobsTableClient({ jobs: initialJobs }: JobsTableClientPr
           </div>
         </div>
       )}
+
+      {/* Admin Upload Resume Modal */}
+      <AdminUploadResumeModal
+        isOpen={uploadModalOpen}
+        onClose={() => setUploadModalOpen(false)}
+        initialJobId={selectedUploadJobId}
+        jobsList={jobs.map((j) => ({
+          id: j.id,
+          title: j.title,
+          department: j.department,
+          type: j.type,
+          atsKeywords: j.atsKeywords || [],
+          slug: j.slug,
+        }))}
+        onSuccess={handleUploadSuccess}
+      />
     </div>
   );
 }

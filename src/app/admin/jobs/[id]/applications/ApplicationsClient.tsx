@@ -25,8 +25,10 @@ import {
   Filter,
   Save,
   MessageSquare,
-  AlertCircle
+  AlertCircle,
+  UploadCloud
 } from "lucide-react";
+import AdminUploadResumeModal from "../../AdminUploadResumeModal";
 import { 
   updateApplicationStatusAction, 
   updateApplicationNotesAction, 
@@ -44,6 +46,7 @@ interface ApplicationItem {
   };
   resumeUrl: string;
   resumeFileName?: string;
+  source?: string;
   answers: {
     questionId: string;
     question: string;
@@ -85,6 +88,46 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
   const [notesInput, setNotesInput] = useState("");
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [notesSuccess, setNotesSuccess] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
+  const handleUploadSuccess = (newApp: any) => {
+    const formatted: ApplicationItem = {
+      id: newApp.id,
+      candidate: {
+        name: newApp.candidate.name,
+        email: newApp.candidate.email,
+        phone: newApp.candidate.phone,
+        portfolioUrl: newApp.candidate.portfolioUrl,
+        linkedinUrl: newApp.candidate.linkedinUrl,
+      },
+      resumeUrl: newApp.resumeUrl,
+      resumeFileName: newApp.resumeFileName || "resume.pdf",
+      source: newApp.source || "LinkedIn",
+      answers: [],
+      atsScore: newApp.atsScore ?? 0,
+      matchedKeywords: newApp.matchedKeywords || [],
+      missingKeywords: newApp.missingKeywords || [],
+      status: newApp.status || "new",
+      notes: newApp.notes || "",
+      createdAt: newApp.createdAt || new Date().toISOString(),
+    };
+
+    setApps((prev) => {
+      const idx = prev.findIndex((a) => a.id === formatted.id);
+      let updated;
+      if (idx >= 0) {
+        updated = [...prev];
+        updated[idx] = formatted;
+      } else {
+        updated = [formatted, ...prev];
+      }
+      return updated.sort((a, b) => b.atsScore - a.atsScore);
+    });
+
+    // Auto-open review modal for immediate ATS feedback
+    setSelectedApp(formatted);
+    setNotesInput(formatted.notes || "");
+  };
 
   // Filter & Search
   const filteredApps = apps.filter((app) => {
@@ -182,12 +225,21 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
           </div>
         </div>
 
-        <Link
-          href={`/admin/jobs/${job.id}/edit`}
-          className="px-3 py-1.5 border border-border rounded-md text-xs font-medium hover:bg-secondary transition-colors self-start sm:self-auto"
-        >
-          Edit Screening Keywords
-        </Link>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={() => setIsUploadModalOpen(true)}
+            className="px-3.5 py-1.5 bg-foreground text-background rounded-md text-xs font-semibold hover:bg-foreground/90 transition-colors flex items-center gap-1.5 shadow-xs"
+          >
+            <UploadCloud className="w-3.5 h-3.5" />
+            <span>Upload Resume (ATS)</span>
+          </button>
+          <Link
+            href={`/admin/jobs/${job.id}/edit`}
+            className="px-3 py-1.5 border border-border rounded-md text-xs font-medium hover:bg-secondary transition-colors"
+          >
+            Edit Keywords
+          </Link>
+        </div>
       </div>
 
       {/* Target ATS Keywords Bar */}
@@ -316,11 +368,26 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
                             #{idx + 1}
                           </span>
                           <div>
-                            <p className="font-semibold text-foreground text-sm flex items-center gap-1.5">
-                              {app.candidate.name}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold text-foreground text-sm">
+                                {app.candidate.name}
+                              </p>
+                              {app.source && (
+                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-semibold border ${
+                                  app.source === "LinkedIn"
+                                    ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                                    : app.source === "Indeed"
+                                    ? "bg-purple-500/10 text-purple-500 border-purple-500/20"
+                                    : app.source === "Referral"
+                                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                    : "bg-secondary text-muted-foreground border-border"
+                                }`}>
+                                  {app.source}
+                                </span>
+                              )}
+                            </div>
                             <p className="text-[11px] text-muted-foreground font-mono">
-                              {app.candidate.email} &bull; {app.candidate.phone}
+                              {app.candidate.email || "No email"} &bull; {app.candidate.phone || "No phone"}
                             </p>
                           </div>
                         </div>
@@ -444,15 +511,20 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
                   {selectedApp.atsScore}%
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-foreground">
-                    {selectedApp.candidate.name}
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-foreground">
+                      {selectedApp.candidate.name}
+                    </h3>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-secondary border border-border text-foreground">
+                      Lead Source: {selectedApp.source || "Careers Portal"}
+                    </span>
+                  </div>
                   <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-1">
                     <span className="flex items-center gap-1">
-                      <Mail className="w-3 h-3" /> {selectedApp.candidate.email}
+                      <Mail className="w-3 h-3" /> {selectedApp.candidate.email || "No email provided"}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Phone className="w-3 h-3" /> {selectedApp.candidate.phone}
+                      <Phone className="w-3 h-3" /> {selectedApp.candidate.phone || "No phone provided"}
                     </span>
                   </div>
                 </div>
@@ -700,6 +772,15 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
           </div>
         </div>
       )}
+
+      {/* Admin Upload Resume Modal */}
+      <AdminUploadResumeModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        initialJobId={job.id}
+        fixedJob={true}
+        onSuccess={handleUploadSuccess}
+      />
     </div>
   );
 }

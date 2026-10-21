@@ -19,10 +19,15 @@ import {
   Check,
   FileText,
   X,
+  CheckSquare,
   CircleDot,
   Star,
-  CheckSquare
+  ListPlus,
+  Zap
 } from "lucide-react";
+import JobAiImportModal from "./JobAiImportModal";
+import BulkBulletModal from "./BulkBulletModal";
+import { ParsedJobData } from "@/lib/jdParser";
 import { createJobAction, updateJobAction } from "./actions";
 
 export interface JobQuestion {
@@ -125,6 +130,59 @@ export default function JobForm({ initialData, isEdit }: JobFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // AI & Bulk Import State
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [bulkModalType, setBulkModalType] = useState<"responsibilities" | "requirements" | null>(null);
+
+  const handleApplyAiData = (data: ParsedJobData) => {
+    if (data.title) setTitle(data.title);
+    if (data.department) setDepartment(data.department);
+    if (data.type) setType(data.type);
+    if (data.locationType) setLocationType(data.locationType);
+    if (data.location) setLocation(data.location);
+    if (data.experience) setExperience(data.experience);
+    if (data.description) setDescription(data.description);
+    if (data.salaryMin) setSalaryMin(data.salaryMin);
+    if (data.salaryMax) setSalaryMax(data.salaryMax);
+    if (data.salaryPeriod) setSalaryPeriod(data.salaryPeriod);
+    if (data.currency) setCurrency(data.currency);
+
+    if (data.responsibilities && data.responsibilities.length > 0) {
+      setResponsibilities(data.responsibilities);
+    }
+    if (data.requirements && data.requirements.length > 0) {
+      setRequirements(data.requirements);
+    }
+    if (data.atsKeywords && data.atsKeywords.length > 0) {
+      setAtsKeywords((prev) => {
+        const combined = new Set([...prev, ...(data.atsKeywords || [])]);
+        return Array.from(combined);
+      });
+    }
+
+    setSuccess("Job posting details imported successfully.");
+    setTimeout(() => setSuccess(null), 4000);
+  };
+
+  const handleAddBulkBullets = (bullets: string[], replace: boolean) => {
+    if (bulkModalType === "responsibilities") {
+      if (replace) {
+        setResponsibilities(bullets);
+      } else {
+        const filteredCurrent = responsibilities.filter((r) => r.trim() !== "");
+        setResponsibilities([...filteredCurrent, ...bullets]);
+      }
+    } else if (bulkModalType === "requirements") {
+      if (replace) {
+        setRequirements(bullets);
+      } else {
+        const filteredCurrent = requirements.filter((r) => r.trim() !== "");
+        setRequirements([...filteredCurrent, ...bullets]);
+      }
+    }
+    setBulkModalType(null);
+  };
 
   // Responsibilities Handlers
   const handleAddResponsibility = () => setResponsibilities([...responsibilities, ""]);
@@ -372,17 +430,25 @@ export default function JobForm({ initialData, isEdit }: JobFormProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsAiModalOpen(true)}
+            className="px-3 py-1.5 rounded-md border border-border bg-background hover:bg-secondary text-foreground text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+            <span>Import Description</span>
+          </button>
           <Link
             href="/admin/jobs"
-            className="px-4 py-2 border border-border rounded-md text-xs font-medium hover:bg-secondary transition-colors"
+            className="px-3 py-1.5 border border-border rounded-md text-xs font-medium hover:bg-secondary transition-colors"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 bg-foreground text-background rounded-md text-xs font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+            className="px-4 py-1.5 bg-foreground text-background rounded-md text-xs font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors flex items-center gap-1.5"
           >
             {loading ? "Saving..." : isEdit ? "Save Changes" : "Publish Job"}
           </button>
@@ -404,14 +470,31 @@ export default function JobForm({ initialData, isEdit }: JobFormProps) {
         </div>
       )}
 
-      {/* Google Jobs & ATS Badge */}
-      <div className="p-4 rounded-xl bg-secondary/30 border border-border/60 flex items-start gap-3">
-        <Sparkles className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-        <div className="text-xs space-y-1">
-          <p className="font-medium text-foreground">ATS Resume Scoring &amp; Google Jobs Automation Active</p>
-          <p className="text-muted-foreground leading-relaxed">
-            Candidates submitting resumes are automatically parsed and scored against your target keywords. Candidates will also answer your role-specific screening questions.
-          </p>
+      {/* Smart Job Description Import Banner */}
+      <div className="p-4 rounded-xl border border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-secondary text-foreground flex items-center justify-center font-bold shrink-0">
+            <Sparkles className="w-4 h-4 text-blue-500" />
+          </div>
+          <div>
+            <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
+              Smart Job Description Import
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Auto-format summary, responsibilities, requirements, and ATS screening keywords directly from raw text.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsAiModalOpen(true)}
+            className="px-3.5 py-1.5 rounded-lg border border-border bg-background hover:bg-secondary text-foreground text-xs font-medium transition-colors flex items-center gap-1.5 shadow-xs"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+            <span>Import Description</span>
+          </button>
         </div>
       </div>
 
@@ -1017,13 +1100,23 @@ export default function JobForm({ initialData, isEdit }: JobFormProps) {
               Specific duties and day-to-day deliverables.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={handleAddResponsibility}
-            className="px-2.5 py-1.5 border border-border bg-secondary hover:bg-secondary/80 rounded-md text-xs font-medium flex items-center gap-1 transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" /> Add Duty
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setBulkModalType("responsibilities")}
+              className="px-2.5 py-1.5 border border-border bg-secondary hover:bg-secondary/80 rounded-md text-xs font-medium flex items-center gap-1 transition-colors"
+              title="Paste multiple bullet points at once"
+            >
+              <ListPlus className="w-3.5 h-3.5 text-blue-500" /> Bulk Paste
+            </button>
+            <button
+              type="button"
+              onClick={handleAddResponsibility}
+              className="px-2.5 py-1.5 border border-border bg-secondary hover:bg-secondary/80 rounded-md text-xs font-medium flex items-center gap-1 transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add Duty
+            </button>
+          </div>
         </div>
 
         <div className="space-y-2.5">
@@ -1063,13 +1156,23 @@ export default function JobForm({ initialData, isEdit }: JobFormProps) {
               Educational background, skills, software proficiency, or experience requirements.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={handleAddRequirement}
-            className="px-2.5 py-1.5 border border-border bg-secondary hover:bg-secondary/80 rounded-md text-xs font-medium flex items-center gap-1 transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" /> Add Requirement
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setBulkModalType("requirements")}
+              className="px-2.5 py-1.5 border border-border bg-secondary hover:bg-secondary/80 rounded-md text-xs font-medium flex items-center gap-1 transition-colors"
+              title="Paste multiple requirements at once"
+            >
+              <ListPlus className="w-3.5 h-3.5 text-emerald-500" /> Bulk Paste
+            </button>
+            <button
+              type="button"
+              onClick={handleAddRequirement}
+              className="px-2.5 py-1.5 border border-border bg-secondary hover:bg-secondary/80 rounded-md text-xs font-medium flex items-center gap-1 transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add Requirement
+            </button>
+          </div>
         </div>
 
         <div className="space-y-2.5">
@@ -1148,6 +1251,23 @@ export default function JobForm({ initialData, isEdit }: JobFormProps) {
           {loading ? "Saving Posting..." : isEdit ? "Update Job Posting" : "Publish Job Posting"}
         </button>
       </div>
+
+      {/* AI / ChatGPT Import Modal */}
+      <JobAiImportModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        onApply={handleApplyAiData}
+        currentTitle={title}
+        currentDepartment={department}
+      />
+
+      {/* Bulk Bullet Paste Modal */}
+      <BulkBulletModal
+        isOpen={bulkModalType !== null}
+        title={bulkModalType === "responsibilities" ? "Core Responsibilities" : "Key Requirements"}
+        onClose={() => setBulkModalType(null)}
+        onAdd={handleAddBulkBullets}
+      />
     </form>
   );
 }

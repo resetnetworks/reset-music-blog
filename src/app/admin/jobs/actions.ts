@@ -218,3 +218,32 @@ export async function deleteApplicationAction(applicationId: string, jobId?: str
     return { error: error.message || "Failed to delete application" };
   }
 }
+
+export async function getJobsListAction() {
+  try {
+    await requireAdminSession();
+    await dbConnect();
+    const jobs = await Job.find({})
+      .sort({ createdAt: -1 })
+      .select("title department type location status atsKeywords slug")
+      .lean();
+
+    return {
+      success: true,
+      jobs: jobs.map((j: any) => ({
+        id: j._id.toString(),
+        title: j.title,
+        department: j.department,
+        type: j.type,
+        location: j.location,
+        status: j.status || "active",
+        atsKeywords: j.atsKeywords || [],
+        slug: j.slug,
+      })),
+    };
+  } catch (error: any) {
+    console.error("Error fetching jobs list:", error);
+    return { success: false, error: error.message || "Failed to fetch jobs" };
+  }
+}
+

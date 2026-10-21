@@ -40,6 +40,7 @@ export default async function JobApplicationsPage({
     },
     resumeUrl: a.resumeUrl || "",
     resumeFileName: a.resumeFileName || "resume.pdf",
+    source: a.source || "Careers Portal",
     answers: (a.answers || []).map((ans: any) => ({
       questionId: ans.questionId,
       question: ans.question,

@@ -38,6 +38,7 @@ export default async function AdminJobsPage() {
     description: j.description,
     applyUrl: j.applyUrl || "",
     status: j.status || "active",
+    atsKeywords: j.atsKeywords || [],
     applicantCount: countMap[j._id.toString()] || 0,
     createdAt: j.createdAt?.toISOString() || new Date().toISOString(),
   }));

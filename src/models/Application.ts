@@ -13,6 +13,7 @@ export interface IApplication {
   resumeUrl: string;
   resumeFileName?: string;
   resumeText?: string;
+  source?: string;
   answers: {
     questionId: string;
     question: string;
@@ -40,6 +41,12 @@ const ApplicationSchema = new mongoose.Schema(
     resumeUrl: { type: String, required: true },
     resumeFileName: { type: String, default: "resume.pdf" },
     resumeText: { type: String, default: "" },
+    source: {
+      type: String,
+      default: "Careers Portal",
+      trim: true,
+      index: true,
+    },
     answers: [
       {
         _id: false,
