@@ -427,18 +427,11 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
                         </p>
                       </td>
 
-                      {/* ATS Score (Combines Resume + Q&A Answers) */}
+                      {/* ATS Score */}
                       <td className="px-4 py-3">
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-xs text-foreground">
-                            {app.atsScore}%
-                          </span>
-                          {app.answers && app.answers.length > 0 && (
-                            <span className="text-[10px] text-muted-foreground">
-                              Q&amp;A: {app.screeningScore ?? app.atsScore}% &bull; Resume: {app.resumeScore ?? app.atsScore}%
-                            </span>
-                          )}
-                        </div>
+                        <span className="font-semibold text-xs text-foreground">
+                          {app.atsScore}%
+                        </span>
                       </td>
 
                       {/* Matched Keywords */}
