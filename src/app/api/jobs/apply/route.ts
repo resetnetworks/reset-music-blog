@@ -203,8 +203,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 5. Calculate ATS Score & Keyword Matches
-    const atsResult = calculateAtsScore(resumeText, job.atsKeywords || []);
+    // 5. Calculate ATS Score taking into account resume text AND candidate screening answers
+    const atsResult = calculateAtsScore(
+      resumeText,
+      job.atsKeywords || [],
+      parsedAnswers,
+      job.customQuestions || []
+    );
 
     // 6. Save Application
     const newApplication = await Application.create({
@@ -219,8 +224,10 @@ export async function POST(req: NextRequest) {
       resumeUrl,
       resumeFileName: resumeFile.name || "resume.pdf",
       resumeText: resumeText.slice(0, 50000), // preserve text for searching
-      answers: parsedAnswers,
+      answers: atsResult.scoredAnswers && atsResult.scoredAnswers.length > 0 ? atsResult.scoredAnswers : parsedAnswers,
       atsScore: atsResult.score,
+      resumeScore: atsResult.resumeScore,
+      screeningScore: atsResult.screeningScore,
       matchedKeywords: atsResult.matchedKeywords,
       missingKeywords: atsResult.missingKeywords,
       status: "new",

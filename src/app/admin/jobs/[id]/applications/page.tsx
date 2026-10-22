@@ -45,8 +45,11 @@ export default async function JobApplicationsPage({
       questionId: ans.questionId,
       question: ans.question,
       answer: ans.answer,
+      score: ans.score ?? 0,
     })),
     atsScore: a.atsScore ?? 0,
+    resumeScore: a.resumeScore ?? 0,
+    screeningScore: a.screeningScore ?? 0,
     matchedKeywords: a.matchedKeywords || [],
     missingKeywords: a.missingKeywords || [],
     status: a.status || "new",
@@ -61,6 +64,15 @@ export default async function JobApplicationsPage({
     type: job.type,
     location: job.location,
     atsKeywords: job.atsKeywords || [],
+    customQuestions: (job.customQuestions || []).map((q: any) => ({
+      id: q.id,
+      question: q.question,
+      type: q.type,
+      options: q.options || [],
+      required: !!q.required,
+      scaleMin: q.scaleMin,
+      scaleMax: q.scaleMax,
+    })),
   };
 
   return (

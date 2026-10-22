@@ -18,8 +18,11 @@ export interface IApplication {
     questionId: string;
     question: string;
     answer: string;
+    score?: number;
   }[];
   atsScore: number;
+  resumeScore?: number;
+  screeningScore?: number;
   matchedKeywords: string[];
   missingKeywords: string[];
   status: "new" | "reviewed" | "shortlisted" | "interview" | "rejected" | "hired";
@@ -53,9 +56,12 @@ const ApplicationSchema = new mongoose.Schema(
         questionId: { type: String, required: true },
         question: { type: String, required: true },
         answer: { type: String, default: "" },
+        score: { type: Number, default: 0 },
       },
     ],
     atsScore: { type: Number, default: 0, index: true },
+    resumeScore: { type: Number, default: 0 },
+    screeningScore: { type: Number, default: 0 },
     matchedKeywords: [{ type: String }],
     missingKeywords: [{ type: String }],
     status: {

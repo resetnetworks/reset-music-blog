@@ -64,15 +64,15 @@ export default function AdminArticlesClient({
   return (
     <>
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1 max-w-xs">
+      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div className="relative w-full sm:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
             value={search}
             onChange={handleSearchChange}
             placeholder="Search articles..."
-            className="w-full pl-10 pr-4 py-2 text-sm bg-background border border-border rounded-md outline-none focus:ring-1 focus:ring-foreground/20"
+            className="w-full pl-10 pr-4 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-foreground transition-all"
           />
         </div>
         <div className="flex gap-1">
@@ -124,7 +124,7 @@ export default function AdminArticlesClient({
                     >
                       {article.title}
                     </Link>
-                    <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-xs">
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-2xl">
                       {article.excerpt}
                     </p>
                   </td>

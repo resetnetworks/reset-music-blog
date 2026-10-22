@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { 
   ArrowLeft, 
@@ -8,24 +8,16 @@ import {
   ExternalLink, 
   FileText, 
   CheckCircle2, 
-  XCircle, 
-  Clock, 
-  Sparkles, 
-  UserCheck, 
+  X, 
   Trash2, 
-  Tag, 
-  Building, 
   Mail, 
   Phone, 
   Globe, 
   Linkedin, 
   HelpCircle,
   FileCheck,
-  ChevronRight,
-  Filter,
   Save,
   MessageSquare,
-  AlertCircle,
   UploadCloud
 } from "lucide-react";
 import AdminUploadResumeModal from "../../AdminUploadResumeModal";
@@ -51,8 +43,11 @@ interface ApplicationItem {
     questionId: string;
     question: string;
     answer: string;
+    score?: number;
   }[];
   atsScore: number;
+  resumeScore?: number;
+  screeningScore?: number;
   matchedKeywords: string[];
   missingKeywords: string[];
   status: "new" | "reviewed" | "shortlisted" | "interview" | "rejected" | "hired";
@@ -68,6 +63,13 @@ interface ApplicationsClientProps {
     type: string;
     location: string;
     atsKeywords?: string[];
+    customQuestions?: Array<{
+      id: string;
+      question: string;
+      type: string;
+      options?: string[];
+      required?: boolean;
+    }>;
   };
   applications: ApplicationItem[];
 }
@@ -102,9 +104,11 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
       },
       resumeUrl: newApp.resumeUrl,
       resumeFileName: newApp.resumeFileName || "resume.pdf",
-      source: newApp.source || "LinkedIn",
+      source: newApp.source || "Careers Portal",
       answers: [],
       atsScore: newApp.atsScore ?? 0,
+      resumeScore: newApp.atsScore ?? 0,
+      screeningScore: 0,
       matchedKeywords: newApp.matchedKeywords || [],
       missingKeywords: newApp.missingKeywords || [],
       status: newApp.status || "new",
@@ -124,7 +128,6 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
       return updated.sort((a, b) => b.atsScore - a.atsScore);
     });
 
-    // Auto-open review modal for immediate ATS feedback
     setSelectedApp(formatted);
     setNotesInput(formatted.notes || "");
   };
@@ -136,6 +139,7 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
       app.candidate.name.toLowerCase().includes(q) ||
       app.candidate.email.toLowerCase().includes(q) ||
       app.candidate.phone.includes(q) ||
+      (app.notes && app.notes.toLowerCase().includes(q)) ||
       app.matchedKeywords.some((k) => k.toLowerCase().includes(q));
 
     const matchesStatus = statusFilter === "all" || app.status === statusFilter;
@@ -152,6 +156,17 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
   const highMatchCount = apps.filter((a) => a.atsScore >= 70).length;
   const shortlistedCount = apps.filter((a) => a.status === "shortlisted" || a.status === "interview").length;
   const avgScore = totalCount > 0 ? Math.round(apps.reduce((acc, a) => acc + a.atsScore, 0) / totalCount) : 0;
+
+  const stageCounts = useMemo(() => {
+    return {
+      all: apps.length,
+      new: apps.filter((a) => a.status === "new").length,
+      shortlisted: apps.filter((a) => a.status === "shortlisted").length,
+      interview: apps.filter((a) => a.status === "interview").length,
+      hired: apps.filter((a) => a.status === "hired").length,
+      rejected: apps.filter((a) => a.status === "rejected").length,
+    };
+  }, [apps]);
 
   const handleStatusChange = async (appId: string, newStatus: string) => {
     const res = await updateApplicationStatusAction(appId, newStatus, job.id);
@@ -189,6 +204,33 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
     }
   };
 
+  const [savingNotesId, setSavingNotesId] = useState<string | null>(null);
+  const [savedNotesId, setSavedNotesId] = useState<string | null>(null);
+
+  const handleInlineNotesUpdate = async (appId: string, newNotes: string) => {
+    const currentApp = apps.find((a) => a.id === appId);
+    if (!currentApp || (currentApp.notes || "") === newNotes.trim()) {
+      return;
+    }
+    setSavingNotesId(appId);
+    try {
+      const res = await updateApplicationNotesAction(appId, newNotes.trim(), job.id);
+      if (res.success) {
+        setApps((prev) =>
+          prev.map((a) => (a.id === appId ? { ...a, notes: newNotes.trim() } : a))
+        );
+        if (selectedApp && selectedApp.id === appId) {
+          setSelectedApp({ ...selectedApp, notes: newNotes.trim() });
+          setNotesInput(newNotes.trim());
+        }
+        setSavedNotesId(appId);
+        setTimeout(() => setSavedNotesId(null), 2000);
+      }
+    } finally {
+      setSavingNotesId(null);
+    }
+  };
+
   const handleDelete = async (appId: string) => {
     if (!confirm("Are you sure you want to delete this application?")) return;
     const res = await deleteApplicationAction(appId, job.id);
@@ -200,58 +242,54 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Top Header */}
+      {/* Top Header - Simple & Clean */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
-        <div className="flex items-start gap-3">
+        <div className="flex items-center gap-3">
           <Link
             href="/admin/jobs"
-            className="p-2 rounded-lg border border-border bg-background hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors mt-0.5"
+            className="p-2 rounded-lg border border-border bg-background hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 text-[10px] font-semibold bg-red-500/10 text-red-500 rounded uppercase tracking-wider">
-                {job.type}
-              </span>
-              <span className="text-xs text-muted-foreground">{job.department}</span>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>{job.department}</span>
+              <span>&bull;</span>
+              <span>{job.type}</span>
+              <span>&bull;</span>
+              <span>{job.location}</span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-1">
-              Applicants for {job.title}
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground mt-0.5">
+              {job.title}
             </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Ranked automatically by ATS Keyword Match and role screening criteria
-            </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <button
             onClick={() => setIsUploadModalOpen(true)}
-            className="px-3.5 py-1.5 bg-foreground text-background rounded-md text-xs font-semibold hover:bg-foreground/90 transition-colors flex items-center gap-1.5 shadow-xs"
+            className="px-3.5 py-2 bg-foreground text-background rounded-lg text-xs font-medium hover:bg-foreground/90 transition-colors flex items-center gap-1.5"
           >
             <UploadCloud className="w-3.5 h-3.5" />
-            <span>Upload Resume (ATS)</span>
+            <span>Upload Resume</span>
           </button>
           <Link
             href={`/admin/jobs/${job.id}/edit`}
-            className="px-3 py-1.5 border border-border rounded-md text-xs font-medium hover:bg-secondary transition-colors"
+            className="px-3.5 py-2 border border-border rounded-lg text-xs font-medium hover:bg-secondary transition-colors"
           >
-            Edit Keywords
+            Edit Job
           </Link>
         </div>
       </div>
 
-      {/* Target ATS Keywords Bar */}
+      {/* Target ATS Keywords - Clean Muted Row */}
       {job.atsKeywords && job.atsKeywords.length > 0 && (
-        <div className="p-3.5 bg-secondary/30 rounded-xl border border-border/60 flex flex-wrap items-center gap-2 text-xs">
-          <span className="font-semibold text-foreground flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-500" /> Target ATS Keywords:
-          </span>
+        <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">ATS Keywords:</span>
           {job.atsKeywords.map((kw) => (
             <span
               key={kw}
-              className="px-2 py-0.5 rounded-md bg-secondary text-foreground text-[11px] font-mono border border-border/50"
+              className="px-2 py-0.5 rounded bg-secondary text-foreground text-xs font-normal"
             >
               {kw}
             </span>
@@ -259,61 +297,74 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
         </div>
       )}
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl border border-border bg-card">
-          <p className="text-xs text-muted-foreground font-medium">Total Applicants</p>
-          <p className="text-2xl font-bold mt-1 text-foreground">{totalCount}</p>
+      {/* Summary Metrics - Minimal & Crisp */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="p-4 rounded-lg border border-border bg-card">
+          <p className="text-xs text-muted-foreground">Total Applicants</p>
+          <p className="text-xl font-semibold mt-1 text-foreground">{totalCount}</p>
         </div>
-        <div className="p-4 rounded-xl border border-border bg-card">
-          <p className="text-xs text-muted-foreground font-medium">Top Match (70%+ ATS)</p>
-          <p className="text-2xl font-bold mt-1 text-emerald-500">{highMatchCount}</p>
+        <div className="p-4 rounded-lg border border-border bg-card">
+          <p className="text-xs text-muted-foreground">High Match (≥ 70%)</p>
+          <p className="text-xl font-semibold mt-1 text-foreground">{highMatchCount}</p>
         </div>
-        <div className="p-4 rounded-xl border border-border bg-card">
-          <p className="text-xs text-muted-foreground font-medium">Shortlisted / Interview</p>
-          <p className="text-2xl font-bold mt-1 text-blue-500">{shortlistedCount}</p>
+        <div className="p-4 rounded-lg border border-border bg-card">
+          <p className="text-xs text-muted-foreground">In Pipeline</p>
+          <p className="text-xl font-semibold mt-1 text-foreground">{shortlistedCount}</p>
         </div>
-        <div className="p-4 rounded-xl border border-border bg-card">
-          <p className="text-xs text-muted-foreground font-medium">Average ATS Match</p>
-          <p className="text-2xl font-bold mt-1 text-foreground">{avgScore}%</p>
+        <div className="p-4 rounded-lg border border-border bg-card">
+          <p className="text-xs text-muted-foreground">Average Score</p>
+          <p className="text-xl font-semibold mt-1 text-foreground">{avgScore}%</p>
         </div>
+      </div>
+
+      {/* Status Stage Navigation - Clean Minimal Tabs */}
+      <div className="flex items-center gap-1 overflow-x-auto pb-1 border-b border-border">
+        {[
+          { id: "all", label: "All", count: stageCounts.all },
+          { id: "new", label: "New", count: stageCounts.new },
+          { id: "shortlisted", label: "Shortlisted", count: stageCounts.shortlisted },
+          { id: "interview", label: "Interview", count: stageCounts.interview },
+          { id: "hired", label: "Hired", count: stageCounts.hired },
+          { id: "rejected", label: "Rejected", count: stageCounts.rejected },
+        ].map((tab) => {
+          const isActive = statusFilter === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setStatusFilter(tab.id)}
+              className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+                isActive
+                  ? "bg-secondary text-foreground font-semibold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span className="text-[11px] opacity-70">({tab.count})</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Filter and Search Controls */}
       <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search candidate, email, phone, or skill..."
+            placeholder="Search candidate, skill, notes..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 bg-background border border-border rounded-md text-xs outline-none focus:ring-1 focus:ring-foreground"
+            className="w-full pl-8 pr-3 py-1.5 bg-background border border-border rounded-lg text-xs outline-none focus:ring-1 focus:ring-foreground transition-all"
           />
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          {/* Status Filter */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-1.5 bg-background border border-border rounded-md text-xs outline-none focus:ring-1 focus:ring-foreground"
-          >
-            <option value="all">All Stages</option>
-            <option value="new">New</option>
-            <option value="shortlisted">Shortlisted</option>
-            <option value="interview">Interview</option>
-            <option value="rejected">Rejected</option>
-            <option value="hired">Hired</option>
-          </select>
-
-          {/* ATS Score Filter */}
           <select
             value={scoreFilter}
             onChange={(e) => setScoreFilter(e.target.value)}
-            className="px-3 py-1.5 bg-background border border-border rounded-md text-xs outline-none focus:ring-1 focus:ring-foreground"
+            className="px-3 py-1.5 bg-background border border-border rounded-lg text-xs outline-none focus:ring-1 focus:ring-foreground"
           >
-            <option value="all">All ATS Scores</option>
+            <option value="all">All Scores</option>
             <option value="high">High Match (≥ 70%)</option>
             <option value="mid">Mid Match (40% - 69%)</option>
             <option value="low">Low Match (&lt; 40%)</option>
@@ -322,23 +373,25 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
       </div>
 
       {/* Applications Table */}
-      <div className="border border-border rounded-xl overflow-hidden bg-card">
+      <div className="border border-border rounded-lg overflow-hidden bg-card">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-secondary/40 border-b border-border text-muted-foreground uppercase tracking-wider text-[10px]">
+            <thead className="bg-secondary/30 border-b border-border text-muted-foreground text-[11px]">
               <tr>
-                <th className="px-4 py-3 font-semibold">Rank &amp; Candidate</th>
-                <th className="px-4 py-3 font-semibold">ATS Match Score</th>
-                <th className="px-4 py-3 font-semibold">Matched Keywords</th>
-                <th className="px-4 py-3 font-semibold">Status Stage</th>
-                <th className="px-4 py-3 font-semibold">Date Applied</th>
-                <th className="px-4 py-3 font-semibold text-right">Actions</th>
+                <th className="px-4 py-3 font-medium w-12 text-center">#</th>
+                <th className="px-4 py-3 font-medium min-w-[220px]">Candidate</th>
+                <th className="px-4 py-3 font-medium min-w-[140px]">ATS Score</th>
+                <th className="px-4 py-3 font-medium min-w-[200px]">Matched Skills</th>
+                <th className="px-4 py-3 font-medium min-w-[120px]">Status</th>
+                <th className="px-4 py-3 font-medium min-w-[220px]">Remarks</th>
+                <th className="px-4 py-3 font-medium min-w-[100px]">Applied</th>
+                <th className="px-4 py-3 font-medium text-right min-w-[90px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
               {filteredApps.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
                     {apps.length === 0
                       ? "No candidates have applied for this position yet."
                       : "No applicants found matching your search filters."}
@@ -346,88 +399,65 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
                 </tr>
               ) : (
                 filteredApps.map((app, idx) => {
-                  const isHigh = app.atsScore >= 70;
-                  const isMid = app.atsScore >= 40 && app.atsScore < 70;
-
                   return (
                     <tr
                       key={app.id}
-                      className="hover:bg-secondary/20 transition-colors group cursor-pointer"
+                      className="hover:bg-secondary/20 transition-colors cursor-pointer"
                       onClick={() => handleOpenDetail(app)}
                     >
-                      {/* Rank & Candidate Info */}
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-2.5">
-                          <span
-                            className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                              idx === 0 && app.atsScore > 0
-                                ? "bg-amber-500/20 text-amber-500 border border-amber-500/30"
-                                : "bg-secondary text-muted-foreground"
-                            }`}
-                          >
-                            #{idx + 1}
-                          </span>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-semibold text-foreground text-sm">
-                                {app.candidate.name}
-                              </p>
-                              {app.source && (
-                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-semibold border ${
-                                  app.source === "LinkedIn"
-                                    ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
-                                    : app.source === "Indeed"
-                                    ? "bg-purple-500/10 text-purple-500 border-purple-500/20"
-                                    : app.source === "Referral"
-                                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                                    : "bg-secondary text-muted-foreground border-border"
-                                }`}>
-                                  {app.source}
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-[11px] text-muted-foreground font-mono">
-                              {app.candidate.email || "No email"} &bull; {app.candidate.phone || "No phone"}
-                            </p>
-                          </div>
-                        </div>
+                      {/* Rank Number - Completely Uniform, No 1st Place Highlight */}
+                      <td className="px-4 py-3 text-center text-muted-foreground font-mono text-xs">
+                        {idx + 1}
                       </td>
 
-                      {/* ATS Score */}
-                      <td className="px-4 py-3.5">
+                      {/* Candidate Info */}
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <div
-                            className={`px-2.5 py-1 rounded-md font-bold text-xs flex items-center gap-1 ${
-                              isHigh
-                                ? "bg-emerald-500/15 text-emerald-500 border border-emerald-500/30"
-                                : isMid
-                                ? "bg-amber-500/15 text-amber-500 border border-amber-500/30"
-                                : "bg-secondary text-muted-foreground border border-border"
-                            }`}
-                          >
-                            <Sparkles className="w-3 h-3" />
-                            <span>{app.atsScore}%</span>
-                          </div>
+                          <span className="font-medium text-foreground text-xs">
+                            {app.candidate.name}
+                          </span>
+                          {app.source && (
+                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-secondary text-muted-foreground border border-border">
+                              {app.source}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          {app.candidate.email || "No email"} {app.candidate.phone ? `• ${app.candidate.phone}` : ""}
+                        </p>
+                      </td>
+
+                      {/* ATS Score (Combines Resume + Q&A Answers) */}
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-xs text-foreground">
+                            {app.atsScore}%
+                          </span>
+                          {app.answers && app.answers.length > 0 && (
+                            <span className="text-[10px] text-muted-foreground">
+                              Q&amp;A: {app.screeningScore ?? app.atsScore}% &bull; Resume: {app.resumeScore ?? app.atsScore}%
+                            </span>
+                          )}
                         </div>
                       </td>
 
                       {/* Matched Keywords */}
-                      <td className="px-4 py-3.5">
-                        <div className="flex flex-wrap gap-1 max-w-xs">
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1 max-w-sm">
                           {app.matchedKeywords.length === 0 ? (
                             <span className="text-[11px] text-muted-foreground italic">None matched</span>
                           ) : (
                             app.matchedKeywords.slice(0, 3).map((kw) => (
                               <span
                                 key={kw}
-                                className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                                className="px-1.5 py-0.5 rounded text-[10px] bg-secondary text-foreground"
                               >
                                 {kw}
                               </span>
                             ))
                           )}
                           {app.matchedKeywords.length > 3 && (
-                            <span className="text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded">
+                            <span className="text-[10px] text-muted-foreground px-1">
                               +{app.matchedKeywords.length - 3}
                             </span>
                           )}
@@ -435,49 +465,73 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
                       </td>
 
                       {/* Status Dropdown */}
-                      <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                         <select
                           value={app.status}
                           onChange={(e) => handleStatusChange(app.id, e.target.value)}
-                          className="px-2 py-1 bg-background border border-border rounded text-[11px] font-medium outline-none focus:ring-1 focus:ring-foreground capitalize"
+                          className="px-2 py-1 bg-background border border-border rounded text-xs capitalize outline-none focus:ring-1 focus:ring-foreground"
                         >
                           <option value="new">New</option>
                           <option value="shortlisted">Shortlisted</option>
                           <option value="interview">Interview</option>
-                          <option value="rejected">Rejected</option>
                           <option value="hired">Hired</option>
+                          <option value="rejected">Rejected</option>
                         </select>
                       </td>
 
+                      {/* Remarks / HR Notes */}
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <div className="relative flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            defaultValue={app.notes || ""}
+                            key={app.id + (app.notes || "")}
+                            placeholder="Add remark..."
+                            onBlur={(e) => handleInlineNotesUpdate(app.id, e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.currentTarget.blur();
+                              }
+                            }}
+                            className="w-full px-2.5 py-1 bg-background border border-border/60 hover:border-border rounded text-xs outline-none focus:ring-1 focus:ring-foreground transition-all placeholder:text-muted-foreground/60 text-foreground"
+                          />
+                          {savingNotesId === app.id ? (
+                            <div className="w-3 h-3 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin shrink-0" />
+                          ) : savedNotesId === app.id ? (
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                          ) : null}
+                        </div>
+                      </td>
+
                       {/* Date Applied */}
-                      <td className="px-4 py-3.5 text-muted-foreground text-[11px]" suppressHydrationWarning>
+                      <td className="px-4 py-3 text-muted-foreground text-[11px] whitespace-nowrap" suppressHydrationWarning>
                         {formatDate(app.createdAt)}
                       </td>
 
                       {/* Actions */}
-                      <td className="px-4 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1.5">
+                      <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1">
                           {app.resumeUrl && (
                             <a
                               href={app.resumeUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="p-1.5 text-muted-foreground hover:text-foreground rounded hover:bg-secondary transition-colors"
-                              title="Download / View Resume"
+                              className="p-1 text-muted-foreground hover:text-foreground rounded transition-colors"
+                              title="View Resume"
                             >
                               <FileText className="w-3.5 h-3.5" />
                             </a>
                           )}
                           <button
                             onClick={() => handleOpenDetail(app)}
-                            className="px-2 py-1 rounded bg-secondary hover:bg-secondary/80 text-foreground text-[11px] font-medium transition-colors"
+                            className="px-2 py-1 rounded bg-secondary hover:bg-secondary/80 text-foreground text-xs font-medium transition-colors"
                           >
                             Review
                           </button>
                           <button
                             onClick={() => handleDelete(app.id)}
-                            className="p-1.5 text-muted-foreground hover:text-red-500 rounded hover:bg-red-500/10 transition-colors"
-                            title="Delete Application"
+                            className="p-1 text-muted-foreground hover:text-red-500 rounded transition-colors"
+                            title="Delete"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -494,129 +548,167 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
 
       {/* Candidate Detailed Review Modal */}
       {selectedApp && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-background w-full max-w-3xl rounded-2xl border border-border shadow-2xl relative max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-background w-full max-w-3xl rounded-xl border border-border shadow-xl relative max-h-[90vh] flex flex-col overflow-hidden">
             {/* Modal Header */}
-            <div className="p-5 sm:p-6 border-b border-border/60 flex items-start justify-between bg-secondary/20">
-              <div className="flex items-start gap-3">
-                <div
-                  className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg ${
-                    selectedApp.atsScore >= 70
-                      ? "bg-emerald-500/15 text-emerald-500 border border-emerald-500/30"
-                      : selectedApp.atsScore >= 40
-                      ? "bg-amber-500/15 text-amber-500 border border-amber-500/30"
-                      : "bg-secondary text-muted-foreground border border-border"
-                  }`}
-                >
-                  {selectedApp.atsScore}%
+            <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {selectedApp.candidate.name}
+                  </h3>
+                  <span className="px-2 py-0.5 rounded text-[10px] bg-secondary text-muted-foreground border border-border">
+                    {selectedApp.source || "Careers Portal"}
+                  </span>
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-bold text-foreground">
-                      {selectedApp.candidate.name}
-                    </h3>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-secondary border border-border text-foreground">
-                      Lead Source: {selectedApp.source || "Careers Portal"}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-1">
+                <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-1">
+                  {selectedApp.candidate.email && (
                     <span className="flex items-center gap-1">
-                      <Mail className="w-3 h-3" /> {selectedApp.candidate.email || "No email provided"}
+                      <Mail className="w-3 h-3" /> {selectedApp.candidate.email}
                     </span>
+                  )}
+                  {selectedApp.candidate.phone && (
                     <span className="flex items-center gap-1">
-                      <Phone className="w-3 h-3" /> {selectedApp.candidate.phone || "No phone provided"}
+                      <Phone className="w-3 h-3" /> {selectedApp.candidate.phone}
                     </span>
-                  </div>
+                  )}
+                  <span className="text-[11px]" suppressHydrationWarning>
+                    Applied: {formatDate(selectedApp.createdAt)}
+                  </span>
                 </div>
               </div>
 
               <button
                 onClick={() => setSelectedApp(null)}
-                className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors"
+                className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg transition-colors"
               >
-                <XCircle className="w-5 h-5" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs sm:text-sm">
-              {/* ATS Score & Keyword Breakdown */}
-              <div className="p-4 rounded-xl border border-border bg-card space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-emerald-500" /> ATS Keyword Match Breakdown
-                  </h4>
-                  <span className="text-xs font-bold text-foreground">
-                    {selectedApp.matchedKeywords.length} of{" "}
-                    {selectedApp.matchedKeywords.length + selectedApp.missingKeywords.length} Skills Matched
-                  </span>
+            <div className="p-5 overflow-y-auto space-y-5 flex-1 text-xs">
+              {/* ATS Score Overview Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3.5 rounded-lg border border-border bg-card">
+                  <p className="text-[11px] text-muted-foreground">Overall ATS Score</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">{selectedApp.atsScore}%</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Weighted composite rating</p>
                 </div>
-
-                {/* Progress bar */}
-                <div className="w-full bg-secondary h-2.5 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full transition-all ${
-                      selectedApp.atsScore >= 70
-                        ? "bg-emerald-500"
-                        : selectedApp.atsScore >= 40
-                        ? "bg-amber-500"
-                        : "bg-muted-foreground"
-                    }`}
-                    style={{ width: `${selectedApp.atsScore}%` }}
-                  />
+                <div className="p-3.5 rounded-lg border border-border bg-card">
+                  <p className="text-[11px] text-muted-foreground">Screening Q&amp;A Score</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">
+                    {selectedApp.screeningScore ?? selectedApp.atsScore}%
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Based on answered questions</p>
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                  <div className="space-y-1.5">
-                    <p className="text-[11px] font-semibold text-emerald-500">
-                      ✓ Skills Found in Resume ({selectedApp.matchedKeywords.length}):
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {selectedApp.matchedKeywords.length === 0 ? (
-                        <span className="text-muted-foreground italic text-xs">No keywords found</span>
-                      ) : (
-                        selectedApp.matchedKeywords.map((kw) => (
-                          <span
-                            key={kw}
-                            className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs font-medium"
-                          >
-                            {kw}
-                          </span>
-                        ))
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <p className="text-[11px] font-semibold text-muted-foreground">
-                      ✗ Skills Missing from Resume ({selectedApp.missingKeywords.length}):
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {selectedApp.missingKeywords.length === 0 ? (
-                        <span className="text-muted-foreground italic text-xs">None missing</span>
-                      ) : (
-                        selectedApp.missingKeywords.map((kw) => (
-                          <span
-                            key={kw}
-                            className="px-2 py-0.5 rounded bg-secondary text-muted-foreground border border-border/50 text-xs"
-                          >
-                            {kw}
-                          </span>
-                        ))
-                      )}
-                    </div>
-                  </div>
+                <div className="p-3.5 rounded-lg border border-border bg-card">
+                  <p className="text-[11px] text-muted-foreground">Resume Keywords Match</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">
+                    {selectedApp.resumeScore ?? selectedApp.atsScore}%
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    {selectedApp.matchedKeywords.length} skills matched
+                  </p>
                 </div>
               </div>
 
-              {/* Links & Resume */}
+              {/* Matched & Missing Skills */}
+              <div className="p-4 rounded-lg border border-border bg-card space-y-3">
+                <div>
+                  <p className="text-[11px] font-medium text-foreground mb-1.5">
+                    Matched Skills ({selectedApp.matchedKeywords.length})
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {selectedApp.matchedKeywords.length === 0 ? (
+                      <span className="text-muted-foreground italic text-xs">None matched</span>
+                    ) : (
+                      selectedApp.matchedKeywords.map((kw) => (
+                        <span
+                          key={kw}
+                          className="px-2 py-0.5 rounded bg-secondary text-foreground text-xs"
+                        >
+                          {kw}
+                        </span>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {selectedApp.missingKeywords.length > 0 && (
+                  <div>
+                    <p className="text-[11px] font-medium text-muted-foreground mb-1.5">
+                      Missing Keywords ({selectedApp.missingKeywords.length})
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedApp.missingKeywords.map((kw) => (
+                        <span
+                          key={kw}
+                          className="px-2 py-0.5 rounded bg-secondary/50 text-muted-foreground text-xs"
+                        >
+                          {kw}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Answers to Screening Questions */}
+              {selectedApp.answers && selectedApp.answers.length > 0 && (
+                <div className="p-4 rounded-lg border border-border bg-card space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                      <HelpCircle className="w-3.5 h-3.5 text-muted-foreground" />
+                      Candidate Screening Answers ({selectedApp.answers.length})
+                    </h4>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {selectedApp.answers.map((ans, i) => {
+                      const isUrl = /^https?:\/\//i.test(ans.answer.trim());
+                      return (
+                        <div key={i} className="p-3 rounded-md bg-secondary/30 border border-border/50 space-y-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-xs font-medium text-foreground">
+                              {i + 1}. {ans.question}
+                            </p>
+                            {typeof ans.score === "number" && ans.score > 0 && (
+                              <span className="px-1.5 py-0.5 rounded bg-secondary text-[10px] font-mono text-muted-foreground shrink-0">
+                                {ans.score}%
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed">
+                            {isUrl ? (
+                              <a
+                                href={ans.answer.trim()}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-500 hover:underline break-all inline-flex items-center gap-1"
+                              >
+                                {ans.answer.trim()} <ExternalLink className="w-3 h-3" />
+                              </a>
+                            ) : ans.answer ? (
+                              ans.answer
+                            ) : (
+                              <em className="text-muted-foreground italic">No answer provided</em>
+                            )}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Links & Resume PDF */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Resume Download Box */}
-                <div className="p-4 rounded-xl border border-border bg-card flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <FileCheck className="w-5 h-5 text-emerald-500" />
+                <div className="p-3.5 rounded-lg border border-border bg-card flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileCheck className="w-4 h-4 text-muted-foreground" />
                     <div>
-                      <p className="font-semibold text-foreground text-xs">Resume PDF</p>
+                      <p className="font-medium text-foreground text-xs">Resume PDF</p>
                       <p className="text-[11px] text-muted-foreground truncate max-w-[160px]">
                         {selectedApp.resumeFileName || "Candidate_Resume.pdf"}
                       </p>
@@ -627,76 +719,53 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
                       href={selectedApp.resumeUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3 py-1.5 rounded-md bg-foreground text-background text-xs font-medium hover:bg-foreground/90 transition-colors flex items-center gap-1"
+                      className="px-3 py-1.5 rounded bg-foreground text-background text-xs font-medium hover:bg-foreground/90 transition-colors flex items-center gap-1"
                     >
                       View PDF <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
                 </div>
 
-                {/* Profiles & Links */}
-                <div className="p-4 rounded-xl border border-border bg-card flex flex-col justify-center space-y-1.5">
-                  <div className="flex items-center gap-2 text-xs">
-                    <Linkedin className="w-3.5 h-3.5 text-blue-500" />
-                    {selectedApp.candidate.linkedinUrl ? (
-                      <a
-                        href={selectedApp.candidate.linkedinUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline truncate"
-                      >
-                        {selectedApp.candidate.linkedinUrl}
-                      </a>
-                    ) : (
-                      <span className="text-muted-foreground italic">No LinkedIn provided</span>
-                    )}
-                  </div>
+                <div className="p-3.5 rounded-lg border border-border bg-card flex flex-col justify-center space-y-1">
+                  {selectedApp.candidate.linkedinUrl ? (
+                    <a
+                      href={selectedApp.candidate.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-500 hover:underline flex items-center gap-1.5 truncate"
+                    >
+                      <Linkedin className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">{selectedApp.candidate.linkedinUrl}</span>
+                    </a>
+                  ) : (
+                    <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                      <Linkedin className="w-3.5 h-3.5 shrink-0" /> No LinkedIn provided
+                    </span>
+                  )}
 
-                  <div className="flex items-center gap-2 text-xs">
-                    <Globe className="w-3.5 h-3.5 text-emerald-500" />
-                    {selectedApp.candidate.portfolioUrl ? (
-                      <a
-                        href={selectedApp.candidate.portfolioUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-emerald-500 hover:underline truncate"
-                      >
-                        {selectedApp.candidate.portfolioUrl}
-                      </a>
-                    ) : (
-                      <span className="text-muted-foreground italic">No portfolio provided</span>
-                    )}
-                  </div>
+                  {selectedApp.candidate.portfolioUrl ? (
+                    <a
+                      href={selectedApp.candidate.portfolioUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-foreground hover:underline flex items-center gap-1.5 truncate"
+                    >
+                      <Globe className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">{selectedApp.candidate.portfolioUrl}</span>
+                    </a>
+                  ) : (
+                    <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                      <Globe className="w-3.5 h-3.5 shrink-0" /> No portfolio link provided
+                    </span>
+                  )}
                 </div>
               </div>
 
-              {/* Answers to Dynamic Screening Questions */}
-              {selectedApp.answers && selectedApp.answers.length > 0 && (
-                <div className="p-5 rounded-xl border border-border bg-card space-y-3">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                    <HelpCircle className="w-4 h-4 text-blue-500" /> Role-Specific Answers
-                  </h4>
-
-                  <div className="space-y-3">
-                    {selectedApp.answers.map((ans, i) => (
-                      <div key={i} className="p-3 rounded-lg bg-secondary/30 border border-border/40 space-y-1">
-                        <p className="text-xs font-semibold text-foreground">
-                          {i + 1}. {ans.question}
-                        </p>
-                        <p className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                          {ans.answer ? ans.answer : <em className="italic">No answer provided</em>}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* HR Private Notes */}
-              <div className="p-5 rounded-xl border border-border bg-card space-y-3">
+              {/* Remarks / HR Notes */}
+              <div className="p-4 rounded-lg border border-border bg-card space-y-2">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                    <MessageSquare className="w-4 h-4 text-amber-500" /> HR Internal Notes
+                  <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5 text-muted-foreground" /> Remarks &amp; Notes
                   </h4>
                   {notesSuccess && (
                     <span className="text-[11px] text-emerald-500 font-medium flex items-center gap-1">
@@ -706,11 +775,11 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
                 </div>
 
                 <textarea
-                  rows={3}
-                  placeholder="Add private evaluation notes, interview schedules, compensation discussions..."
+                  rows={2}
+                  placeholder="Add evaluation remarks..."
                   value={notesInput}
                   onChange={(e) => setNotesInput(e.target.value)}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-md text-xs outline-none focus:ring-1 focus:ring-foreground transition-all leading-relaxed"
+                  className="w-full px-3 py-1.5 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-foreground transition-all leading-relaxed"
                 />
 
                 <div className="flex justify-end">
@@ -718,7 +787,7 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
                     type="button"
                     onClick={handleSaveNotes}
                     disabled={isSavingNotes}
-                    className="px-3 py-1.5 bg-foreground text-background text-xs font-medium rounded-md hover:bg-foreground/90 disabled:opacity-50 transition-colors flex items-center gap-1"
+                    className="px-3 py-1.5 bg-foreground text-background text-xs font-medium rounded hover:bg-foreground/90 disabled:opacity-50 transition-colors flex items-center gap-1"
                   >
                     <Save className="w-3 h-3" />
                     <span>{isSavingNotes ? "Saving..." : "Save Notes"}</span>
@@ -727,11 +796,11 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
               </div>
             </div>
 
-            {/* Modal Footer / Stage Pipeline */}
-            <div className="p-4 sm:p-5 border-t border-border/60 bg-secondary/20 flex flex-wrap items-center justify-between gap-3">
+            {/* Modal Footer / Pipeline Buttons */}
+            <div className="p-4 border-t border-border flex flex-wrap items-center justify-between gap-3 bg-secondary/10">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground">Current Stage:</span>
-                <span className="px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider bg-foreground text-background">
+                <span className="text-xs text-muted-foreground">Current Stage:</span>
+                <span className="px-2 py-0.5 rounded text-xs font-medium uppercase tracking-wider bg-secondary text-foreground border border-border">
                   {selectedApp.status}
                 </span>
               </div>
@@ -739,9 +808,9 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleStatusChange(selectedApp.id, "shortlisted")}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
                     selectedApp.status === "shortlisted"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-foreground text-background"
                       : "border border-border bg-background hover:bg-secondary text-foreground"
                   }`}
                 >
@@ -749,9 +818,9 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
                 </button>
                 <button
                   onClick={() => handleStatusChange(selectedApp.id, "interview")}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
                     selectedApp.status === "interview"
-                      ? "bg-emerald-600 text-white"
+                      ? "bg-foreground text-background"
                       : "border border-border bg-background hover:bg-secondary text-foreground"
                   }`}
                 >
@@ -759,7 +828,7 @@ export default function ApplicationsClient({ job, applications: initialApps }: A
                 </button>
                 <button
                   onClick={() => handleStatusChange(selectedApp.id, "rejected")}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
                     selectedApp.status === "rejected"
                       ? "bg-red-600 text-white"
                       : "border border-border bg-background hover:bg-secondary text-red-500"

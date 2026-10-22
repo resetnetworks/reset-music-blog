@@ -106,56 +106,78 @@ export default function JobsTableClient({ jobs: initialJobs }: JobsTableClientPr
   return (
     <div className="space-y-6">
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl border border-border bg-card">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
+        <div className="p-5 rounded-xl border border-border bg-card shadow-2xs">
           <p className="text-xs text-muted-foreground font-medium">Total Positions</p>
-          <p className="text-2xl font-bold mt-1 text-foreground">{jobs.length}</p>
+          <p className="text-2xl sm:text-3xl font-bold mt-1 text-foreground">{jobs.length}</p>
         </div>
-        <div className="p-4 rounded-xl border border-border bg-card">
+        <div className="p-5 rounded-xl border border-border bg-card shadow-2xs">
           <p className="text-xs text-muted-foreground font-medium">Active (Public &amp; Google)</p>
-          <p className="text-2xl font-bold mt-1 text-emerald-500">{totalActive}</p>
+          <p className="text-2xl sm:text-3xl font-bold mt-1 text-emerald-500">{totalActive}</p>
         </div>
-        <div className="p-4 rounded-xl border border-border bg-card">
+        <div className="p-5 rounded-xl border border-border bg-card shadow-2xs">
           <p className="text-xs text-muted-foreground font-medium">Draft Positions</p>
-          <p className="text-2xl font-bold mt-1 text-amber-500">{totalDraft}</p>
+          <p className="text-2xl sm:text-3xl font-bold mt-1 text-amber-500">{totalDraft}</p>
         </div>
-        <div className="p-4 rounded-xl border border-border bg-card">
+        <div className="p-5 rounded-xl border border-border bg-card shadow-2xs">
           <p className="text-xs text-muted-foreground font-medium">Closed Positions</p>
-          <p className="text-2xl font-bold mt-1 text-muted-foreground">{totalClosed}</p>
+          <p className="text-2xl sm:text-3xl font-bold mt-1 text-muted-foreground">{totalClosed}</p>
         </div>
+      </div>
+
+      {/* Status Stage Navigation Tabs */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar border-b border-border/60">
+        {[
+          { id: "all", label: "All Positions", count: jobs.length },
+          { id: "active", label: "Active Only", count: totalActive },
+          { id: "draft", label: "Drafts", count: totalDraft },
+          { id: "closed", label: "Closed", count: totalClosed },
+        ].map((tab) => {
+          const isActive = statusFilter === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setStatusFilter(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-t-lg transition-all border-b-2 whitespace-nowrap ${
+                isActive
+                  ? "border-foreground text-foreground bg-secondary/50 font-bold"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary/25"
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                  isActive
+                    ? "bg-foreground text-background"
+                    : "bg-secondary text-muted-foreground"
+                }`}
+              >
+                {tab.count}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-        <div className="relative w-full sm:w-72">
+        <div className="relative w-full sm:w-96">
           <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search by role or keyword..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 bg-background border border-border rounded-md text-xs outline-none focus:ring-1 focus:ring-foreground"
+            className="w-full pl-9 pr-3 py-2 bg-background border border-border rounded-lg text-xs outline-none focus:ring-1 focus:ring-foreground transition-all"
           />
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
-          {/* Status Select */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-1.5 bg-background border border-border rounded-md text-xs outline-none focus:ring-1 focus:ring-foreground"
-          >
-            <option value="all">All Statuses</option>
-            <option value="active">Active Only</option>
-            <option value="draft">Draft Only</option>
-            <option value="closed">Closed Only</option>
-          </select>
-
           {/* Department Select */}
           <select
             value={deptFilter}
             onChange={(e) => setDeptFilter(e.target.value)}
-            className="px-3 py-1.5 bg-background border border-border rounded-md text-xs outline-none focus:ring-1 focus:ring-foreground capitalize"
+            className="px-3.5 py-2 bg-background border border-border rounded-lg text-xs outline-none focus:ring-1 focus:ring-foreground capitalize font-medium"
           >
             {departments.map((d) => (
               <option key={d} value={d}>
@@ -170,7 +192,7 @@ export default function JobsTableClient({ jobs: initialJobs }: JobsTableClientPr
               setSelectedUploadJobId(jobs[0]?.id || "");
               setUploadModalOpen(true);
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-border bg-background hover:bg-secondary text-foreground text-xs font-semibold rounded-md transition-colors whitespace-nowrap shadow-xs ml-auto sm:ml-0"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 border border-border bg-background hover:bg-secondary text-foreground text-xs font-semibold rounded-lg transition-colors whitespace-nowrap shadow-xs ml-auto sm:ml-0"
           >
             <UploadCloud className="w-3.5 h-3.5" />
             Upload Resume (ATS)
@@ -178,7 +200,7 @@ export default function JobsTableClient({ jobs: initialJobs }: JobsTableClientPr
 
           <Link
             href="/admin/jobs/new"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-foreground text-background text-xs font-medium rounded-md hover:bg-foreground/90 transition-colors whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-foreground text-background text-xs font-semibold rounded-lg hover:bg-foreground/90 transition-colors whitespace-nowrap shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
             New Job
@@ -187,17 +209,17 @@ export default function JobsTableClient({ jobs: initialJobs }: JobsTableClientPr
       </div>
 
       {/* Jobs Table */}
-      <div className="border border-border rounded-xl overflow-hidden bg-card">
+      <div className="border border-border rounded-xl overflow-hidden bg-card shadow-2xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-secondary/40 border-b border-border text-muted-foreground uppercase tracking-wider text-[10px]">
               <tr>
-                <th className="px-4 py-3 font-semibold">Position &amp; Department</th>
-                <th className="px-4 py-3 font-semibold">Applicants &amp; ATS</th>
-                <th className="px-4 py-3 font-semibold">Type &amp; Workplace</th>
-                <th className="px-4 py-3 font-semibold">Application Mode</th>
-                <th className="px-4 py-3 font-semibold">Status</th>
-                <th className="px-4 py-3 font-semibold text-right">Actions</th>
+                <th className="px-5 py-3.5 font-semibold min-w-[260px]">Position &amp; Department</th>
+                <th className="px-4 py-3.5 font-semibold min-w-[150px]">Applicants &amp; ATS</th>
+                <th className="px-4 py-3.5 font-semibold min-w-[140px]">Type &amp; Workplace</th>
+                <th className="px-4 py-3.5 font-semibold min-w-[140px]">Application Mode</th>
+                <th className="px-4 py-3.5 font-semibold min-w-[110px]">Status</th>
+                <th className="px-5 py-3.5 font-semibold text-right min-w-[110px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
